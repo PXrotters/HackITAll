@@ -15,6 +15,11 @@ export default defineConfig({
         target: 'http://10.200.20.204:18000',
         changeOrigin: true,
         secure: false,
+      },
+      '/score': {
+        target: 'http://10.200.20.204:18000',
+        changeOrigin: true,
+        secure: false,
       }
     }
   }

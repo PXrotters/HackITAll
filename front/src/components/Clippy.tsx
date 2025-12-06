@@ -234,11 +234,12 @@ const Clippy: React.FC<ClippyProps> = ({ username, accounts }) => {
         }
     };
 
+    // State for What-If Window
     const [isWhatIfOpen, setIsWhatIfOpen] = useState(false);
-    const [whatIfMessages, setWhatIfMessages] = useState<Message[]>([
-        { id: 0, text: "I can simulate financial scenarios. Ask me: 'What if I stopped smoking?' or 'What if I cut dining out by 50%?'", sender: 'clippy' }
-    ]);
     const [whatIfInput, setWhatIfInput] = useState('');
+    const [whatIfMessages, setWhatIfMessages] = useState<Message[]>([
+        { id: 0, text: "Welcome to What-If Analysis! Ask me to simulate a financial scenario, e.g., 'What if I invest 100 RON in Bitcoin?'", sender: 'clippy' }
+    ]);
     const [isWhatIfThinking, setIsWhatIfThinking] = useState(false);
     const whatIfEndRef = useRef<HTMLDivElement>(null);
 
@@ -314,6 +315,13 @@ const Clippy: React.FC<ClippyProps> = ({ username, accounts }) => {
         const newSessionId = crypto.randomUUID();
         setSessionId(newSessionId);
         fetchGreeting(newSessionId);
+    };
+
+    const handleWhatIfReset = () => {
+        setWhatIfMessages([
+            { id: Date.now(), text: "Welcome to What-If Analysis! Ask me to simulate a financial scenario, e.g., 'What if I invest 100 RON in Bitcoin?'", sender: 'clippy' }
+        ]);
+        setWhatIfInput('');
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -475,6 +483,7 @@ const Clippy: React.FC<ClippyProps> = ({ username, accounts }) => {
                             </div>
 
                             <div style={{ display: 'flex', gap: '5px' }}>
+                                <button onClick={handleWhatIfReset} style={{ minWidth: '50px' }}>Reset</button>
                                 <input
                                     type="text"
                                     value={whatIfInput}
