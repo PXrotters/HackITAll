@@ -48,7 +48,7 @@ public class BankingService {
                                 .setIban(iban)
                                 .setCurrency(dto.getCurrency())
                                 .setName(dto.getName())
-                                .setBalance(new BigDecimal("1000"));
+                                .setBalance(BigDecimal.valueOf(5000000));
 
                 return bankAccountRepository.save(account);
         }
