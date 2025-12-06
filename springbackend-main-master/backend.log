@@ -81,3 +81,36 @@ WARNING: Restricted methods will be blocked in a future release unless native ac
 2025-12-07T01:31:09.281+02:00  INFO 61928 --- [project] [nio-8090-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
 Email sent successfully to: admin@admin.com
 Email sent successfully to: radu@a.a
+respondToOffer() called with id = radu@a.a
+2025-12-07T01:37:38.194+02:00  INFO 61928 --- [project] [nio-8090-exec-6] c.m.s.controller.AuthController          : Request to login for user radu@a.a
+2025-12-07T01:37:38.348+02:00  INFO 61928 --- [project] [nio-8090-exec-6] c.m.s.controller.AuthController          : Successfully logged in user radu@a.a
+respondToOffer() called with id = radu@a.a
+2025-12-07T01:39:36.373+02:00  INFO 61928 --- [project] [nio-8090-exec-2] c.m.s.controller.AuthController          : Request to login for user radu@a.a
+2025-12-07T01:39:36.480+02:00  INFO 61928 --- [project] [nio-8090-exec-2] c.m.s.controller.AuthController          : Successfully logged in user radu@a.a
+respondToOffer() called with id = cvsd
+2025-12-07T01:41:58.908+02:00  INFO 61928 --- [project] [nio-8090-exec-7] c.m.s.controller.AuthController          : Request to login for user cvsd
+respondToOffer() called with id = radu@a.a
+2025-12-07T01:42:07.458+02:00  INFO 61928 --- [project] [nio-8090-exec-8] c.m.s.controller.AuthController          : Request to login for user radu@a.a
+2025-12-07T01:42:07.562+02:00  INFO 61928 --- [project] [nio-8090-exec-8] c.m.s.controller.AuthController          : Successfully logged in user radu@a.a
+Email sent successfully to: radu@a.a
+respondToOffer() called with id = radu@a.a
+2025-12-07T01:47:51.968+02:00  INFO 61928 --- [project] [nio-8090-exec-8] c.m.s.controller.AuthController          : Request to login for user radu@a.a
+2025-12-07T01:47:52.071+02:00  INFO 61928 --- [project] [nio-8090-exec-8] c.m.s.controller.AuthController          : Successfully logged in user radu@a.a
+Email sent successfully to: radu@a.a
+Email sent successfully to: radu@a.a
+2025-12-07T01:55:57.646+02:00  INFO 61928 --- [project] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-12-07T01:55:57.650+02:00  INFO 61928 --- [project] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2025-12-07T01:55:57.652+02:00  INFO 61928 --- [project] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  24:56 min
+[INFO] Finished at: 2025-12-07T01:55:57+02:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:3.2.1:run (default-cli) on project springbackend: Process terminated with exit code: 143 -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException

@@ -175,15 +175,23 @@ public class BankingService {
                 sb.append("Current Balance: ").append(account.getBalance()).append(" ").append(account.getCurrency())
                                 .append("\n\n");
                 sb.append("Recent Transactions:\n");
-                sb.append("--------------------------------------------------\n");
+                sb.append("----------------------------------------------------------------------------------------------------\n");
+                sb.append(String.format("%-12s | %-8s | %-10s | %-5s | %-15s | %-20s\n", "Date", "Type", "Amount",
+                                "Curr", "Category", "Description"));
+                sb.append("----------------------------------------------------------------------------------------------------\n");
 
                 for (Transaction t : transactions) {
-                        sb.append(t.getTransactionDate().toLocalDate()).append(" | ")
-                                        .append(String.format("%-6s", t.getType())).append(" | ")
-                                        .append(t.getAmount()).append(" ").append(account.getCurrency()).append(" | ")
-                                        .append(t.getDescription()).append("\n");
+                        String categoryName = (t.getCategory() != null) ? t.getCategory().getName() : "Uncategorized";
+                        sb.append(String.format("%-12s | %-8s | %-10s | %-5s | %-15s | %s\n",
+                                        t.getTransactionDate().toLocalDate(),
+                                        t.getType(),
+                                        t.getAmount(),
+                                        account.getCurrency(),
+                                        categoryName.length() > 15 ? categoryName.substring(0, 12) + "..."
+                                                        : categoryName,
+                                        t.getDescription()));
                 }
-                sb.append("--------------------------------------------------\n");
+                sb.append("----------------------------------------------------------------------------------------------------\n");
                 sb.append("\nThank you for banking with OldBank.");
 
                 emailService.sendEmail(userEmail, "Bank Statement - " + account.getIban(), sb.toString());
