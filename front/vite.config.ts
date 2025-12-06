@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/clippy/message': {
+      '/clippy': {
         target: 'http://10.200.20.204:18000',
         changeOrigin: true,
         secure: false,

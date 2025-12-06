@@ -2,6 +2,7 @@ import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "98.css";
 import xpWallpaper from './assets/windows_xp_original-wallpaper-3840x2160.jpg';
+import winLogo from './assets/win.png';
 
 // Importăm paginile create
 import Home from "./Home";
@@ -42,8 +43,9 @@ function App() {
         <div className="window" style={{ margin: "10px", zIndex: 100 }}>
           <div className="window-body" style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
 
-            <div style={{ fontWeight: "bold", marginRight: "20px" }}>
-              💻 OldBank {localStorage.getItem('username') ? `| Hello, ${localStorage.getItem('username')}` : ''}
+            <div style={{ fontWeight: "bold", marginRight: "20px", display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <img src={winLogo} alt="Logo" style={{ height: '24px' }} />
+              OldBank {localStorage.getItem('username') ? `| Hello, ${localStorage.getItem('username')}` : ''}
             </div>
 
             {/* Link-urile sunt stilizate ca butoane Windows */}

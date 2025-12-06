@@ -234,6 +234,88 @@ const Clippy: React.FC<ClippyProps> = ({ username, accounts }) => {
         }
     };
 
+    const [isWhatIfOpen, setIsWhatIfOpen] = useState(false);
+    const [whatIfMessages, setWhatIfMessages] = useState<Message[]>([
+        { id: 0, text: "I can simulate financial scenarios. Ask me: 'What if I stopped smoking?' or 'What if I cut dining out by 50%?'", sender: 'clippy' }
+    ]);
+    const [whatIfInput, setWhatIfInput] = useState('');
+    const [isWhatIfThinking, setIsWhatIfThinking] = useState(false);
+    const whatIfEndRef = useRef<HTMLDivElement>(null);
+
+    const handleWhatIf = async () => {
+        if (!whatIfInput.trim()) return;
+
+        const newUserMsg: Message = {
+            id: Date.now(),
+            text: whatIfInput,
+            sender: 'user'
+        };
+
+        setWhatIfMessages(prev => [...prev, newUserMsg]);
+        const question = whatIfInput;
+        setWhatIfInput('');
+        setIsWhatIfThinking(true);
+
+        try {
+            // Construct Context
+            const summary: SpendingSummary = {
+                period: new Date().toISOString().slice(0, 7),
+                currency: 'RON',
+                total_income: 0,
+                total_expenses: 0,
+                by_category: accounts.map(acc => ({ category: acc.name, amount: acc.balance }))
+            };
+
+            const recentTransactions = await fetchAllTransactions();
+
+            const req = {
+                session_id: sessionId, // Shared session ID ok? Or new? Let's share for context or new. New is safer for clean slate.
+                user_id: username,
+                question: question,
+                context: {
+                    spending_summary: summary,
+                    recent_transactions: recentTransactions
+                }
+            };
+
+            const response = await fetch('/clippy/whatif', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(req)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setWhatIfMessages(prev => [...prev, {
+                    id: Date.now() + 1,
+                    text: data.reply,
+                    sender: 'clippy'
+                }]);
+            } else {
+                setWhatIfMessages(prev => [...prev, { id: Date.now() + 1, text: "Simulation failed. Try again.", sender: 'clippy' }]);
+            }
+        } catch (error) {
+            console.error(error);
+            setWhatIfMessages(prev => [...prev, { id: Date.now() + 1, text: "Error connecting to simulation engine.", sender: 'clippy' }]);
+        } finally {
+            setIsWhatIfThinking(false);
+        }
+    };
+
+    useEffect(() => {
+        if (isWhatIfOpen) {
+            whatIfEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [whatIfMessages, isWhatIfOpen]);
+
+    const handleReset = () => {
+        setMessages([]);
+        setSuggestedReplies([]);
+        const newSessionId = crypto.randomUUID();
+        setSessionId(newSessionId);
+        fetchGreeting(newSessionId);
+    };
+
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
             handleSendMessage();
@@ -241,105 +323,166 @@ const Clippy: React.FC<ClippyProps> = ({ username, accounts }) => {
     };
 
     return (
-        <div style={{
-            position: 'fixed',
-            bottom: '20px',
-            right: '20px',
-            zIndex: 1000,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'end'
-        }}>
-            {isOpen && (
-                <div className="window" style={{ marginBottom: '10px', width: '300px', height: '450px', display: 'flex', flexDirection: 'column' }}>
-                    <div className="title-bar">
-                        <div className="title-bar-text">Clippy Assistant</div>
-                        <div className="title-bar-controls">
-                            <button aria-label="Close" onClick={() => setIsOpen(false)}></button>
-                        </div>
-                    </div>
-                    <div className="window-body" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                        <div style={{ flex: 1, overflowY: 'auto', marginBottom: '10px', padding: '5px', background: 'white', border: '1px solid #808080' }}>
-                            {messages.map(msg => (
-                                <div key={msg.id} style={{
-                                    marginBottom: '5px',
-                                    textAlign: msg.sender === 'user' ? 'right' : 'left'
-                                }}>
-                                    <span style={{
-                                        background: msg.sender === 'user' ? '#e0e0e0' : '#ffffdd',
-                                        padding: '5px 10px',
-                                        borderRadius: '5px',
-                                        display: 'inline-block',
-                                        border: '1px solid gray'
-                                    }}>
-                                        <strong>{msg.sender === 'user' ? 'You' : 'Clippy'}:</strong> {msg.text}
-                                    </span>
-                                </div>
-                            ))}
-                            {isTyping && <p style={{ fontStyle: 'italic', fontSize: '12px' }}>Clippy is typing...</p>}
-                            <div ref={messagesEndRef} />
-                        </div>
-
-                        {/* Suggested Replies */}
-                        {suggestedReplies.length > 0 && (
-                            <div style={{ marginBottom: '10px', display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-                                {suggestedReplies.map((suggestion, idx) => (
-                                    <button
-                                        key={idx}
-                                        onClick={() => handleSendMessage(suggestion)}
-                                        style={{
-                                            fontSize: '11px',
-                                            padding: '4px 8px',
-                                            fontFamily: '"MS Sans Serif", "Segoe UI", sans-serif',
-                                            cursor: 'pointer',
-                                            // Suspicious Override
-                                            color: suggestion.toLowerCase().includes('suspicious') ? 'white' : '#000080', // Navy blue for normal to look like links/options
-                                            backgroundColor: suggestion.toLowerCase().includes('suspicious') ? '#cc0000' : 'white',
-                                            fontWeight: suggestion.toLowerCase().includes('suspicious') ? 'bold' : 'normal',
-                                            border: 'none',
-                                            boxShadow: suggestion.toLowerCase().includes('suspicious')
-                                                ? 'inset -1px -1px #550000, inset 1px 1px #ff6666, inset -2px -2px #880000, inset 2px 2px #ffcccc'
-                                                : 'inset -1px -1px #404040, inset 1px 1px #ffffff, inset -2px -2px #808080, inset 2px 2px #dfdfdf', // Standard 3D but lighter
-                                        }}
-                                        className={!suggestion.toLowerCase().includes('suspicious') ? undefined : ''}
-                                    >
-                                        {suggestion.toLowerCase().includes('suspicious') && <span style={{ marginRight: '4px' }}>⚠️</span>}
-                                        {suggestion}
-                                    </button>
-                                ))}
+        <>
+            {/* === MAIN CLIPPY (Bottom Right) === */}
+            <div style={{
+                position: 'fixed',
+                bottom: '20px',
+                right: '20px',
+                zIndex: 1000,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'end'
+            }}>
+                {isOpen && (
+                    <div className="window" style={{ marginBottom: '10px', width: '300px', height: '450px', display: 'flex', flexDirection: 'column' }}>
+                        <div className="title-bar">
+                            <div className="title-bar-text">Clippy Assistant</div>
+                            <div className="title-bar-controls">
+                                <button aria-label="Close" onClick={() => setIsOpen(false)}></button>
                             </div>
-                        )}
+                        </div>
+                        <div className="window-body" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                            <div style={{ flex: 1, overflowY: 'auto', marginBottom: '10px', padding: '5px', background: 'white', border: '1px solid #808080' }}>
+                                {messages.map(msg => (
+                                    <div key={msg.id} style={{
+                                        marginBottom: '5px',
+                                        textAlign: msg.sender === 'user' ? 'right' : 'left'
+                                    }}>
+                                        <span style={{
+                                            background: msg.sender === 'user' ? '#e0e0e0' : '#ffffdd',
+                                            padding: '5px 10px',
+                                            borderRadius: '5px',
+                                            display: 'inline-block',
+                                            border: '1px solid gray'
+                                        }}>
+                                            <strong>{msg.sender === 'user' ? 'You' : 'Clippy'}:</strong> {msg.text}
+                                        </span>
+                                    </div>
+                                ))}
+                                {isTyping && <p style={{ fontStyle: 'italic', fontSize: '12px' }}>Clippy is thinking...</p>}
+                                <div ref={messagesEndRef} />
+                            </div>
 
-                        <div style={{ display: 'flex', gap: '5px' }}>
-                            <input
-                                type="text"
-                                value={inputValue}
-                                onChange={e => setInputValue(e.target.value)}
-                                onKeyDown={handleKeyPress}
-                                style={{ flex: 1 }}
-                                placeholder="Ask Clippy..."
-                            />
-                            <button onClick={() => handleSendMessage()}>Send</button>
+                            {/* Suggested Replies */}
+                            {suggestedReplies.length > 0 && (
+                                <div style={{ marginBottom: '10px', display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                                    {suggestedReplies.map((suggestion, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => handleSendMessage(suggestion)}
+                                            style={{
+                                                fontSize: '11px',
+                                                padding: '4px 8px',
+                                                fontFamily: '"MS Sans Serif", "Segoe UI", sans-serif',
+                                                cursor: 'pointer',
+                                                color: suggestion.toLowerCase().includes('suspicious') ? 'white' : '#000080',
+                                                backgroundColor: suggestion.toLowerCase().includes('suspicious') ? '#cc0000' : 'white',
+                                                fontWeight: suggestion.toLowerCase().includes('suspicious') ? 'bold' : 'normal',
+                                                border: 'none',
+                                                boxShadow: suggestion.toLowerCase().includes('suspicious')
+                                                    ? 'inset -1px -1px #550000, inset 1px 1px #ff6666, inset -2px -2px #880000, inset 2px 2px #ffcccc'
+                                                    : 'inset -1px -1px #404040, inset 1px 1px #ffffff, inset -2px -2px #808080, inset 2px 2px #dfdfdf',
+                                            }}
+                                        >
+                                            {suggestion.toLowerCase().includes('suspicious') && <span style={{ marginRight: '4px' }}>⚠️</span>}
+                                            {suggestion}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div style={{ display: 'flex', gap: '5px' }}>
+                                <button onClick={handleReset} style={{ minWidth: '50px' }}>Reset</button>
+                                <input
+                                    type="text"
+                                    value={inputValue}
+                                    onChange={e => setInputValue(e.target.value)}
+                                    onKeyDown={handleKeyPress}
+                                    style={{ flex: 1 }}
+                                    placeholder="Ask Clippy..."
+                                />
+                                <button onClick={() => handleSendMessage()}>Send</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {!isOpen && messages.length > 0 && (
-                <div className="window" style={{ marginBottom: '10px', width: '200px', display: 'block' }}>
-                    <div className="window-body">
-                        <p>{messages[messages.length - 1].text}</p>
+                {!isOpen && messages.length > 0 && (
+                    <div className="window" style={{ marginBottom: '10px', width: '200px', display: 'block' }}>
+                        <div className="window-body">
+                            <p>{messages[messages.length - 1].text}</p>
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            <img
-                src="/clippy/clippy-white-1.gif"
-                alt="Clippy"
-                style={{ width: '150px', height: '150px', cursor: 'pointer' }}
-                onClick={() => setIsOpen(!isOpen)}
-            />
-        </div>
+                <img
+                    src="/assistants/clippy-white-1.gif"
+                    alt="Clippy"
+                    style={{ width: '150px', height: '150px', cursor: 'pointer' }}
+                    onClick={() => setIsOpen(!isOpen)}
+                />
+            </div>
+
+            {/* === WHAT-IF ASSISTANT (Bottom Left) === */}
+            <div style={{
+                position: 'fixed',
+                bottom: '20px',
+                left: '20px', // Left corner
+                zIndex: 1000,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'start'
+            }}>
+                {isWhatIfOpen && (
+                    <div className="window" style={{ marginBottom: '10px', width: '300px', height: '400px', display: 'flex', flexDirection: 'column' }}>
+                        <div className="title-bar">
+                            <div className="title-bar-text">🔮 What-If Analysis</div>
+                            <div className="title-bar-controls">
+                                <button aria-label="Close" onClick={() => setIsWhatIfOpen(false)}></button>
+                            </div>
+                        </div>
+                        <div className="window-body" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                            <div style={{ flex: 1, overflowY: 'auto', marginBottom: '10px', padding: '5px', background: 'black', color: '#00ff00', fontFamily: 'monospace', border: '1px solid #808080' }}>
+                                {whatIfMessages.map(msg => (
+                                    <div key={msg.id} style={{ marginBottom: '10px' }}>
+                                        <strong>{msg.sender === 'user' ? '> YOU' : '> SYSTEM'}:</strong>
+                                        <div style={{ marginLeft: '10px', whiteSpace: 'pre-wrap' }}>{msg.text}</div>
+                                    </div>
+                                ))}
+                                {isWhatIfThinking && <div>{'> CALCULATING PROJECTION...'}</div>}
+                                <div ref={whatIfEndRef} />
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '5px' }}>
+                                <input
+                                    type="text"
+                                    value={whatIfInput}
+                                    onChange={e => setWhatIfInput(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && handleWhatIf()}
+                                    style={{ flex: 1, fontFamily: 'monospace' }}
+                                    placeholder="Enter scenario..."
+                                />
+                                <button onClick={handleWhatIf}>Run</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <button
+                    onClick={() => setIsWhatIfOpen(!isWhatIfOpen)}
+                    style={{
+                        height: '40px',
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px'
+                    }}
+                >
+                    🔮 What-If Analysis
+                </button>
+            </div>
+        </>
     );
 };
 
