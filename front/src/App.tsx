@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "98.css";
+import xpWallpaper from './assets/windows_xp_original-wallpaper-3840x2160.jpg';
 
 // Importăm paginile create
 import Home from "./Home";
@@ -20,13 +22,25 @@ import Social from "./Social";
 import Environment from "./Environment";
 
 function App() {
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  const backgroundStyle = isDarkMode ? {
+    // Keep transparent to show body background from index.css
+  } : {
+    backgroundImage: `url(${xpWallpaper})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+    backgroundAttachment: 'fixed'
+  };
+
   return (
     <Router>
-      <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", ...backgroundStyle }}>
 
         {/* === BARA DE MENIU (SUS) === */}
         <div className="window" style={{ margin: "10px", zIndex: 100 }}>
-          <div className="window-body" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <div className="window-body" style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
 
             <div style={{ fontWeight: "bold", marginRight: "20px" }}>
               💻 OldBank {localStorage.getItem('username') ? `| Hello, ${localStorage.getItem('username')}` : ''}
@@ -62,6 +76,12 @@ function App() {
             <Link to="/about">
               <button>ℹ️ About</button>
             </Link>
+
+            <div style={{ marginLeft: 'auto' }}>
+              <button onClick={() => setIsDarkMode(!isDarkMode)}>
+                {isDarkMode ? '🌞 Light Mode' : '🌙 Dark Mode'}
+              </button>
+            </div>
 
           </div>
         </div>
