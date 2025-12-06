@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Clippy from './components/Clippy';
+import RetroPieChart from './components/RetroPieChart';
 
 interface BankAccount {
     id: number;
@@ -115,9 +116,11 @@ const Home: React.FC = () => {
     // History Modal State
     const [historyAccountId, setHistoryAccountId] = useState<number | null>(null);
     const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [showStats, setShowStats] = useState(false);
 
     const fetchHistory = async (accountId: number) => {
         setHistoryAccountId(accountId);
+        setShowStats(true); // Open stats by default
         setTransactions([]);
         try {
             const response = await fetch(`http://localhost:8090/api/v1/bank/accounts/${accountId}/transactions`, {
@@ -131,6 +134,22 @@ const Home: React.FC = () => {
             console.error(e);
         }
     };
+
+    // Calculate chart data
+    const chartData = useMemo(() => {
+        const stats: Record<string, number> = {};
+        transactions.filter(t => t.type === 'DEBIT').forEach(t => {
+            const cat = t.category?.name || 'Uncategorized';
+            stats[cat] = (stats[cat] || 0) + t.amount;
+        });
+
+        const colors = ['#0000FF', '#FF00FF', '#008080', '#00FF00', '#FFFF00', '#800080', '#808000'];
+        return Object.keys(stats).map((key, i) => ({
+            label: key,
+            value: stats[key],
+            color: colors[i % colors.length]
+        }));
+    }, [transactions]);
 
     if (!token) {
         return (
@@ -237,55 +256,75 @@ const Home: React.FC = () => {
 
             {/* History Window */}
             {historyAccountId && (
-                <div className="window" style={{ width: 500, height: 400, display: 'flex', flexDirection: 'column' }}>
-                    <div className="title-bar">
-                        <div className="title-bar-text">Transaction History (Account #{historyAccountId})</div>
-                        <div className="title-bar-controls">
-                            <button aria-label="Close" onClick={() => setHistoryAccountId(null)}></button>
-                        </div>
-                    </div>
-                    <div className="window-body" style={{ flex: 1, overflowY: 'auto' }}>
-                        {/* Selected Account Info */}
-                        {accounts.find(a => a.id === historyAccountId) && (
-                            <div style={{ textAlign: 'center', margin: '10px 0', padding: '10px', background: '#e0e0e0', border: '2px solid white', boxShadow: 'inset 1px 1px #404040, inset -1px -1px white' }}>
-                                <div style={{ fontSize: '16px', fontWeight: 'bold' }}>
-                                    {accounts.find(a => a.id === historyAccountId)?.name}
-                                </div>
-                                <div style={{ fontSize: '14px' }}>
-                                    Balance: <strong>{accounts.find(a => a.id === historyAccountId)?.balance} {accounts.find(a => a.id === historyAccountId)?.currency}</strong>
+                <>
+                    {/* Statistics Window (Separate) */}
+                    {showStats && (
+                        <div className="window" style={{ width: 300, height: 'fit-content', marginRight: '-10px', zIndex: 1 }}>
+                            <div className="title-bar">
+                                <div className="title-bar-text">Spending Analysis</div>
+                                <div className="title-bar-controls">
+                                    <button aria-label="Close" onClick={() => setShowStats(false)}></button>
                                 </div>
                             </div>
-                        )}
+                            <div className="window-body" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <p style={{ margin: '5px 0' }}><strong>Spending by Category</strong></p>
+                                <RetroPieChart data={chartData} width={260} height={170} />
+                                {chartData.length === 0 && <p>No spending data to chart.</p>}
+                            </div>
+                        </div>
+                    )}
 
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr>
-                                    <th style={{ textAlign: 'left' }}>Date</th>
-                                    <th style={{ textAlign: 'left' }}>Type</th>
-                                    <th style={{ textAlign: 'left' }}>Category</th>
-                                    <th style={{ textAlign: 'left' }}>Description</th>
-                                    <th style={{ textAlign: 'right' }}>Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {transactions.map(tx => (
-                                    <tr key={tx.id}>
-                                        <td>{new Date(tx.createdAt).toLocaleString()}</td>
-                                        <td>{tx.type}</td>
-                                        <td>{tx.category?.name || '-'}</td>
-                                        <td>{tx.description}</td>
-                                        <td style={{ textAlign: 'right', color: tx.type === 'DEBIT' ? 'red' : 'green' }}>
-                                            {tx.type === 'DEBIT' ? '-' : '+'}{tx.amount}
-                                        </td>
+                    {/* History Window */}
+                    <div className="window" style={{ width: 400, height: 350, display: 'flex', flexDirection: 'column' }}>
+                        <div className="title-bar">
+                            <div className="title-bar-text">Transaction History (Account #{historyAccountId})</div>
+                            <div className="title-bar-controls">
+                                <button aria-label="Close" onClick={() => setHistoryAccountId(null)}></button>
+                            </div>
+                        </div>
+                        <div className="window-body" style={{ flex: 1, overflowY: 'auto' }}>
+                            {/* Selected Account Info */}
+                            {accounts.find(a => a.id === historyAccountId) && (
+                                <div style={{ textAlign: 'center', margin: '10px 0', padding: '10px', background: '#e0e0e0', border: '2px solid white', boxShadow: 'inset 1px 1px #404040, inset -1px -1px white' }}>
+                                    <div style={{ fontSize: '16px', fontWeight: 'bold' }}>
+                                        {accounts.find(a => a.id === historyAccountId)?.name}
+                                    </div>
+                                    <div style={{ fontSize: '14px' }}>
+                                        Balance: <strong>{accounts.find(a => a.id === historyAccountId)?.balance} {accounts.find(a => a.id === historyAccountId)?.currency}</strong>
+                                    </div>
+                                </div>
+                            )}
+
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr>
+                                        <th style={{ textAlign: 'left' }}>Date</th>
+                                        <th style={{ textAlign: 'left' }}>Type</th>
+                                        <th style={{ textAlign: 'left' }}>Category</th>
+                                        <th style={{ textAlign: 'left' }}>Description</th>
+                                        <th style={{ textAlign: 'right' }}>Amount</th>
                                     </tr>
-                                ))}
-                                {transactions.length === 0 && (
-                                    <tr><td colSpan={4} style={{ textAlign: 'center' }}>No transactions found.</td></tr>
-                                )}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {transactions.map(tx => (
+                                        <tr key={tx.id}>
+                                            <td>{new Date(tx.createdAt).toLocaleString()}</td>
+                                            <td>{tx.type}</td>
+                                            <td>{tx.category?.name || '-'}</td>
+                                            <td>{tx.description}</td>
+                                            <td style={{ textAlign: 'right', color: tx.type === 'DEBIT' ? 'red' : 'green' }}>
+                                                {tx.type === 'DEBIT' ? '-' : '+'}{tx.amount}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {transactions.length === 0 && (
+                                        <tr><td colSpan={5} style={{ textAlign: 'center' }}>No transactions found.</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
+                </>
             )}
         </div >
     );
