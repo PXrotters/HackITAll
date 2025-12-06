@@ -154,7 +154,7 @@ const Clippy: React.FC<ClippyProps> = ({ username, accounts }) => {
                         currency: acc.currency,
                         type: t.type,
                         description: t.description,
-                        category: 'General' // Placeholder as backend doesn't have category yet
+                        category: t.category?.name || 'General' // Use name from backend object
                     }));
                     allTx.push(...enriched);
                 }

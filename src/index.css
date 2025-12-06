@@ -1,0 +1,23 @@
+/* src/index.css */
+body {
+    margin: 0;
+    font-family: 'MS Sans Serif', Arial, sans-serif;
+    /* Setarea imaginii de fundal */
+    background-image: url('./assets/image_5fb2f7.jpg');
+    background-size: cover;
+    /* Să acopere tot ecranul */
+    background-position: center;
+    /* Centrat */
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    /* Imaginea stă fixă când dai scroll */
+    height: 100vh;
+    overflow: hidden;
+    /* Fără scrollbars urâte pe body */
+}
+
+/* Stil pentru link-uri să nu arate ca text albastru subliniat */
+a {
+    text-decoration: none;
+    color: inherit;
+}

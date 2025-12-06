@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import "98.css";
+import React, { useState, useEffect } from 'react';
 import Clippy from './components/Clippy';
 
 interface BankAccount {
     id: number;
     iban: string;
-    currency: string;
     balance: number;
+    currency: string;
     name: string;
 }
 
@@ -21,13 +20,9 @@ interface Transaction {
 
 const Home: React.FC = () => {
     const [accounts, setAccounts] = useState<BankAccount[]>([]);
-    const [loading, setLoading] = useState(false);
-
-    // Create Account State
+    const [loading, setLoading] = useState(true);
     const [newAccountName, setNewAccountName] = useState('');
     const [newAccountCurrency, setNewAccountCurrency] = useState('RON');
-
-    // Transfer State
     const [sourceAccountId, setSourceAccountId] = useState<number | null>(null);
     const [destinationIban, setDestinationIban] = useState('');
     const [amount, setAmount] = useState('');
@@ -37,7 +32,6 @@ const Home: React.FC = () => {
     const token = localStorage.getItem('token');
 
     const fetchAccounts = async () => {
-        if (!token) return;
         setLoading(true);
         try {
             const response = await fetch('http://localhost:8090/api/v1/bank/accounts', {
@@ -58,7 +52,9 @@ const Home: React.FC = () => {
     };
 
     useEffect(() => {
-        fetchAccounts();
+        if (token) {
+            fetchAccounts();
+        }
     }, [token]);
 
     const handleCreateAccount = async () => {
@@ -183,28 +179,6 @@ const Home: React.FC = () => {
                 </div>
             </div>
 
-            {/* Create Account */}
-            <div className="window" style={{ width: 300, height: 'fit-content' }}>
-                <div className="title-bar">
-                    <div className="title-bar-text">New Account</div>
-                </div>
-                <div className="window-body">
-                    <div className="field-row-stacked">
-                        <label>Account Name</label>
-                        <input type="text" value={newAccountName} onChange={e => setNewAccountName(e.target.value)} />
-                    </div>
-                    <div className="field-row-stacked">
-                        <label>Currency</label>
-                        <select value={newAccountCurrency} onChange={e => setNewAccountCurrency(e.target.value)}>
-                            <option value="RON">RON</option>
-                            <option value="EUR">EUR</option>
-                            <option value="USD">USD</option>
-                        </select>
-                    </div>
-                    <button style={{ marginTop: '10px' }} onClick={handleCreateAccount}>Create Account</button>
-                </div>
-            </div>
-
             {/* Make Transfer */}
             <div className="window" style={{ width: 300, height: 'fit-content' }}>
                 <div className="title-bar">
@@ -239,52 +213,81 @@ const Home: React.FC = () => {
                 </div>
             </div>
 
-            {/* History Popup */}
+            {/* Create Account */}
+            <div className="window" style={{ width: 300, height: 'fit-content' }}>
+                <div className="title-bar">
+                    <div className="title-bar-text">New Account</div>
+                </div>
+                <div className="window-body">
+                    <div className="field-row-stacked">
+                        <label>Account Name</label>
+                        <input type="text" value={newAccountName} onChange={e => setNewAccountName(e.target.value)} />
+                    </div>
+                    <div className="field-row-stacked">
+                        <label>Currency</label>
+                        <select value={newAccountCurrency} onChange={e => setNewAccountCurrency(e.target.value)}>
+                            <option value="RON">RON</option>
+                            <option value="EUR">EUR</option>
+                            <option value="USD">USD</option>
+                        </select>
+                    </div>
+                    <button style={{ marginTop: '10px' }} onClick={handleCreateAccount}>Create Account</button>
+                </div>
+            </div>
+
+            {/* History Window */}
             {historyAccountId && (
-                <div style={{
-                    position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-                    background: 'rgba(0,0,0,0.5)', zIndex: 2000, display: 'flex', justifyContent: 'center', alignItems: 'center'
-                }}>
-                    <div className="window" style={{ width: 500, height: 400, display: 'flex', flexDirection: 'column' }}>
-                        <div className="title-bar">
-                            <div className="title-bar-text">Transaction History (Account #{historyAccountId})</div>
-                            <div className="title-bar-controls">
-                                <button aria-label="Close" onClick={() => setHistoryAccountId(null)}></button>
+                <div className="window" style={{ width: 500, height: 400, display: 'flex', flexDirection: 'column' }}>
+                    <div className="title-bar">
+                        <div className="title-bar-text">Transaction History (Account #{historyAccountId})</div>
+                        <div className="title-bar-controls">
+                            <button aria-label="Close" onClick={() => setHistoryAccountId(null)}></button>
+                        </div>
+                    </div>
+                    <div className="window-body" style={{ flex: 1, overflowY: 'auto' }}>
+                        {/* Selected Account Info */}
+                        {accounts.find(a => a.id === historyAccountId) && (
+                            <div style={{ textAlign: 'center', margin: '10px 0', padding: '10px', background: '#e0e0e0', border: '2px solid white', boxShadow: 'inset 1px 1px #404040, inset -1px -1px white' }}>
+                                <div style={{ fontSize: '16px', fontWeight: 'bold' }}>
+                                    {accounts.find(a => a.id === historyAccountId)?.name}
+                                </div>
+                                <div style={{ fontSize: '14px' }}>
+                                    Balance: <strong>{accounts.find(a => a.id === historyAccountId)?.balance} {accounts.find(a => a.id === historyAccountId)?.currency}</strong>
+                                </div>
                             </div>
-                        </div>
-                        <div className="window-body" style={{ flex: 1, overflowY: 'auto' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead>
-                                    <tr>
-                                        <th style={{ textAlign: 'left' }}>Date</th>
-                                        <th style={{ textAlign: 'left' }}>Type</th>
-                                        <th style={{ textAlign: 'left' }}>Category</th>
-                                        <th style={{ textAlign: 'left' }}>Description</th>
-                                        <th style={{ textAlign: 'right' }}>Amount</th>
+                        )}
+
+                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <thead>
+                                <tr>
+                                    <th style={{ textAlign: 'left' }}>Date</th>
+                                    <th style={{ textAlign: 'left' }}>Type</th>
+                                    <th style={{ textAlign: 'left' }}>Category</th>
+                                    <th style={{ textAlign: 'left' }}>Description</th>
+                                    <th style={{ textAlign: 'right' }}>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {transactions.map(tx => (
+                                    <tr key={tx.id}>
+                                        <td>{new Date(tx.createdAt).toLocaleString()}</td>
+                                        <td>{tx.type}</td>
+                                        <td>{tx.category?.name || '-'}</td>
+                                        <td>{tx.description}</td>
+                                        <td style={{ textAlign: 'right', color: tx.type === 'DEBIT' ? 'red' : 'green' }}>
+                                            {tx.type === 'DEBIT' ? '-' : '+'}{tx.amount}
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {transactions.map(tx => (
-                                        <tr key={tx.id}>
-                                            <td>{new Date(tx.createdAt).toLocaleString()}</td>
-                                            <td>{tx.type}</td>
-                                            <td>{tx.category?.name || '-'}</td>
-                                            <td>{tx.description}</td>
-                                            <td style={{ textAlign: 'right', color: tx.type === 'DEBIT' ? 'red' : 'green' }}>
-                                                {tx.type === 'DEBIT' ? '-' : '+'}{tx.amount}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {transactions.length === 0 && (
-                                        <tr><td colSpan={4} style={{ textAlign: 'center' }}>No transactions found.</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                                ))}
+                                {transactions.length === 0 && (
+                                    <tr><td colSpan={4} style={{ textAlign: 'center' }}>No transactions found.</td></tr>
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             )}
-        </div>
+        </div >
     );
 };
 
