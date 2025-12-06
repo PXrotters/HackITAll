@@ -292,6 +292,26 @@ const Home: React.FC = () => {
                                     <div style={{ fontSize: '14px' }}>
                                         Balance: <strong>{accounts.find(a => a.id === historyAccountId)?.balance} {accounts.find(a => a.id === historyAccountId)?.currency}</strong>
                                     </div>
+                                    <button
+                                        style={{ marginTop: '10px' }}
+                                        onClick={async () => {
+                                            if (!historyAccountId) return;
+                                            if (!confirm("Send bank statement to your email?")) return;
+                                            try {
+                                                const res = await fetch(`http://localhost:8090/api/v1/bank/accounts/${historyAccountId}/statement`, {
+                                                    method: 'POST',
+                                                    headers: { 'Authorization': `Bearer ${token}` }
+                                                });
+                                                if (res.ok) alert("Statement sent!");
+                                                else alert("Failed to send statement.");
+                                            } catch (err) {
+                                                console.error(err);
+                                                alert("Error sending statement.");
+                                            }
+                                        }}
+                                    >
+                                        📧 Send Statement via Email
+                                    </button>
                                 </div>
                             )}
 

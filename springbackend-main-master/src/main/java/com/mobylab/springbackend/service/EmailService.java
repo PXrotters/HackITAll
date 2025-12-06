@@ -8,15 +8,26 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
+    private final JavaMailSender emailSender;
 
-    public void sendEmail(String to, String subject, String body) {
+    @Autowired
+    public EmailService(JavaMailSender emailSender) {
+        this.emailSender = emailSender;
+    }
+
+    public void sendEmail(String toEmail, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("noreply@bookswap.ro");
-        message.setTo(to);
+        message.setFrom("no-reply@hackitall.com");
+        message.setTo(toEmail);
         message.setSubject(subject);
-        message.setText(body);
-        mailSender.send(message);
+        message.setText(text);
+
+        try {
+            emailSender.send(message);
+            System.out.println("Email sent successfully to: " + toEmail);
+        } catch (Exception e) {
+            System.err.println("Failed to send email: " + e.getMessage());
+            throw new RuntimeException("Failed to send email", e);
+        }
     }
 }

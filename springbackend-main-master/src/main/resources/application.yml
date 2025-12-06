@@ -26,8 +26,8 @@ spring:
   mail:
     host: sandbox.smtp.mailtrap.io
     port: 2525
-    username: 80579ee70d4a4f
-    password: 45414c44802ca4
+    username: 4e71e6d99e8615
+    password: d25b1e85376b4b
     properties:
       mail:
         smtp:
@@ -53,4 +53,3 @@ admin:
   username: admin
   email: admin@admin.com
   password: admin
-

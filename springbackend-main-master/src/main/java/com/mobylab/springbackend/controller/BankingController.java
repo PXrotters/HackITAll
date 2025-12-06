@@ -40,4 +40,10 @@ public class BankingController {
     public ResponseEntity<?> getTransactions(@PathVariable Long accountId, Authentication authentication) {
         return ResponseEntity.ok(bankingService.getAccountTransactions(authentication.getName(), accountId));
     }
+
+    @PostMapping("/accounts/{accountId}/statement")
+    public ResponseEntity<?> sendStatement(@PathVariable Long accountId, Authentication authentication) {
+        bankingService.sendStatement(authentication.getName(), accountId);
+        return ResponseEntity.ok("Statement sent successfully");
+    }
 }

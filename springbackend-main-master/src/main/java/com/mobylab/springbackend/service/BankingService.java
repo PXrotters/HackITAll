@@ -28,12 +28,16 @@ public class BankingService {
         private final UserRepository userRepository;
         private final CategoryRepository categoryRepository;
 
+        private final EmailService emailService;
+
         public BankingService(BankAccountRepository bankAccountRepository, TransactionRepository transactionRepository,
-                        UserRepository userRepository, CategoryRepository categoryRepository) {
+                        UserRepository userRepository, CategoryRepository categoryRepository,
+                        EmailService emailService) {
                 this.bankAccountRepository = bankAccountRepository;
                 this.transactionRepository = transactionRepository;
                 this.userRepository = userRepository;
                 this.categoryRepository = categoryRepository;
+                this.emailService = emailService;
         }
 
         public BankAccount createAccount(String userEmail, CreateAccountDto dto) {
@@ -149,6 +153,40 @@ public class BankingService {
                                                 + "): " + dto.getDescription())
                                 .setTransactionDate(LocalDateTime.now());
                 transactionRepository.save(creditTx);
+        }
+
+        public void sendStatement(String userEmail, Long accountId) {
+                User user = userRepository.findUserByEmail(userEmail)
+                                .orElseThrow(() -> new BadRequestException("User not found"));
+
+                BankAccount account = bankAccountRepository.findById(accountId)
+                                .orElseThrow(() -> new BadRequestException("Account not found"));
+
+                if (!account.getUser().getId().equals(user.getId())) {
+                        throw new BadRequestException("Not your account");
+                }
+
+                List<Transaction> transactions = transactionRepository
+                                .findAllByAccountIdOrderByCreatedAtDesc(accountId);
+
+                StringBuilder sb = new StringBuilder();
+                sb.append("Bank Statement for Account: ").append(account.getName()).append(" (")
+                                .append(account.getIban()).append(")\n");
+                sb.append("Current Balance: ").append(account.getBalance()).append(" ").append(account.getCurrency())
+                                .append("\n\n");
+                sb.append("Recent Transactions:\n");
+                sb.append("--------------------------------------------------\n");
+
+                for (Transaction t : transactions) {
+                        sb.append(t.getTransactionDate().toLocalDate()).append(" | ")
+                                        .append(String.format("%-6s", t.getType())).append(" | ")
+                                        .append(t.getAmount()).append(" ").append(account.getCurrency()).append(" | ")
+                                        .append(t.getDescription()).append("\n");
+                }
+                sb.append("--------------------------------------------------\n");
+                sb.append("\nThank you for banking with OldBank.");
+
+                emailService.sendEmail(userEmail, "Bank Statement - " + account.getIban(), sb.toString());
         }
 
         private BigDecimal convert(BigDecimal amount, String fromCurrency, String toCurrency) {
