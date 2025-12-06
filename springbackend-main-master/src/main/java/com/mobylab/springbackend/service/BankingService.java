@@ -7,6 +7,8 @@ import com.mobylab.springbackend.exception.BadRequestException;
 import com.mobylab.springbackend.repository.BankAccountRepository;
 import com.mobylab.springbackend.repository.TransactionRepository;
 import com.mobylab.springbackend.repository.UserRepository;
+import com.mobylab.springbackend.entity.Category;
+import com.mobylab.springbackend.repository.CategoryRepository;
 import com.mobylab.springbackend.service.dto.CreateAccountDto;
 import com.mobylab.springbackend.service.dto.TransactionRequestDto;
 import org.springframework.stereotype.Service;
@@ -24,12 +26,14 @@ public class BankingService {
         private final BankAccountRepository bankAccountRepository;
         private final TransactionRepository transactionRepository;
         private final UserRepository userRepository;
+        private final CategoryRepository categoryRepository;
 
         public BankingService(BankAccountRepository bankAccountRepository, TransactionRepository transactionRepository,
-                        UserRepository userRepository) {
+                        UserRepository userRepository, CategoryRepository categoryRepository) {
                 this.bankAccountRepository = bankAccountRepository;
                 this.transactionRepository = transactionRepository;
                 this.userRepository = userRepository;
+                this.categoryRepository = categoryRepository;
         }
 
         public BankAccount createAccount(String userEmail, CreateAccountDto dto) {
@@ -98,20 +102,49 @@ public class BankingService {
                 bankAccountRepository.save(destination);
 
                 // Record Transaction (Debit)
+                Category category = null;
+                if (dto.getCategory() != null && !dto.getCategory().trim().isEmpty()) {
+                        String catName = dto.getCategory().trim();
+                        category = categoryRepository.findByNameAndUser(catName, user)
+                                        .orElseGet(() -> {
+                                                Category newCat = new Category()
+                                                                .setName(catName)
+                                                                .setType("EXPENSE")
+                                                                .setUser(user);
+                                                return categoryRepository.save(newCat);
+                                        });
+                }
+
                 Transaction debitTx = new Transaction()
                                 .setAccount(source)
                                 .setType("DEBIT")
                                 .setAmount(dto.getAmount())
+                                .setCategory(category)
                                 .setDescription("Transfer to " + dto.getDestinationIban() + " ("
                                                 + destination.getCurrency() + "): " + dto.getDescription())
                                 .setTransactionDate(LocalDateTime.now());
                 transactionRepository.save(debitTx);
 
                 // Record Transaction (Credit)
+                Category creditCategory = null;
+                if (dto.getCategory() != null && !dto.getCategory().trim().isEmpty()) {
+                        String catName = dto.getCategory().trim();
+                        User receiverUser = destination.getUser();
+                        creditCategory = categoryRepository.findByNameAndUser(catName, receiverUser)
+                                        .orElseGet(() -> {
+                                                Category newCat = new Category()
+                                                                .setName(catName)
+                                                                .setType("INCOME")
+                                                                .setUser(receiverUser);
+                                                return categoryRepository.save(newCat);
+                                        });
+                }
+
                 Transaction creditTx = new Transaction()
                                 .setAccount(destination)
                                 .setType("CREDIT")
                                 .setAmount(convertedAmount)
+                                .setCategory(creditCategory)
                                 .setDescription("Transfer from " + source.getIban() + " (" + source.getCurrency()
                                                 + "): " + dto.getDescription())
                                 .setTransactionDate(LocalDateTime.now());

@@ -287,8 +287,23 @@ const Clippy: React.FC<ClippyProps> = ({ username, accounts }) => {
                                     <button
                                         key={idx}
                                         onClick={() => handleSendMessage(suggestion)}
-                                        style={{ fontSize: '11px', padding: '2px 5px' }}
+                                        style={{
+                                            fontSize: '11px',
+                                            padding: '4px 8px',
+                                            fontFamily: '"MS Sans Serif", "Segoe UI", sans-serif',
+                                            cursor: 'pointer',
+                                            // Suspicious Override
+                                            color: suggestion.toLowerCase().includes('suspicious') ? 'white' : '#000080', // Navy blue for normal to look like links/options
+                                            backgroundColor: suggestion.toLowerCase().includes('suspicious') ? '#cc0000' : 'white',
+                                            fontWeight: suggestion.toLowerCase().includes('suspicious') ? 'bold' : 'normal',
+                                            border: 'none',
+                                            boxShadow: suggestion.toLowerCase().includes('suspicious')
+                                                ? 'inset -1px -1px #550000, inset 1px 1px #ff6666, inset -2px -2px #880000, inset 2px 2px #ffcccc'
+                                                : 'inset -1px -1px #404040, inset 1px 1px #ffffff, inset -2px -2px #808080, inset 2px 2px #dfdfdf', // Standard 3D but lighter
+                                        }}
+                                        className={!suggestion.toLowerCase().includes('suspicious') ? undefined : ''}
                                     >
+                                        {suggestion.toLowerCase().includes('suspicious') && <span style={{ marginRight: '4px' }}>⚠️</span>}
                                         {suggestion}
                                     </button>
                                 ))}

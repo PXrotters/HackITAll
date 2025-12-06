@@ -16,6 +16,7 @@ interface Transaction {
     type: 'DEBIT' | 'CREDIT';
     amount: number;
     description: string;
+    category?: { name: string };
 }
 
 const Home: React.FC = () => {
@@ -31,6 +32,7 @@ const Home: React.FC = () => {
     const [destinationIban, setDestinationIban] = useState('');
     const [amount, setAmount] = useState('');
     const [description, setDescription] = useState('');
+    const [category, setCategory] = useState('');
 
     const token = localStorage.getItem('token');
 
@@ -94,7 +96,8 @@ const Home: React.FC = () => {
                     sourceAccountId,
                     destinationIban,
                     amount: parseFloat(amount),
-                    description
+                    description,
+                    category
                 })
             });
             if (response.ok) {
@@ -102,6 +105,7 @@ const Home: React.FC = () => {
                 setAmount('');
                 setDestinationIban('');
                 setDescription('');
+                setCategory('');
                 fetchAccounts();
             } else {
                 const err = await response.text();
@@ -227,6 +231,10 @@ const Home: React.FC = () => {
                         <label>Description</label>
                         <input type="text" value={description} onChange={e => setDescription(e.target.value)} />
                     </div>
+                    <div className="field-row-stacked">
+                        <label>Category (e.g. Food, Rent)</label>
+                        <input type="text" value={category} onChange={e => setCategory(e.target.value)} />
+                    </div>
                     <button style={{ marginTop: '10px' }} onClick={handleTransfer}>Send Money</button>
                 </div>
             </div>
@@ -250,6 +258,7 @@ const Home: React.FC = () => {
                                     <tr>
                                         <th style={{ textAlign: 'left' }}>Date</th>
                                         <th style={{ textAlign: 'left' }}>Type</th>
+                                        <th style={{ textAlign: 'left' }}>Category</th>
                                         <th style={{ textAlign: 'left' }}>Description</th>
                                         <th style={{ textAlign: 'right' }}>Amount</th>
                                     </tr>
@@ -259,6 +268,7 @@ const Home: React.FC = () => {
                                         <tr key={tx.id}>
                                             <td>{new Date(tx.createdAt).toLocaleString()}</td>
                                             <td>{tx.type}</td>
+                                            <td>{tx.category?.name || '-'}</td>
                                             <td>{tx.description}</td>
                                             <td style={{ textAlign: 'right', color: tx.type === 'DEBIT' ? 'red' : 'green' }}>
                                                 {tx.type === 'DEBIT' ? '-' : '+'}{tx.amount}
