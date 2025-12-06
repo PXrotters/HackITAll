@@ -5,6 +5,7 @@ import "98.css";
 import Home from "./Home";
 import Login from "./Login";
 import Register from "./Register";
+import About from "./About";
 
 function App() {
   return (
@@ -23,6 +24,8 @@ function App() {
             <Link to="/">
               <button>🏠 Home</button>
             </Link>
+
+
 
             {!localStorage.getItem('token') ? (
               <>
@@ -44,6 +47,10 @@ function App() {
               </button>
             )}
 
+            <Link to="/about">
+              <button>ℹ️ About</button>
+            </Link>
+
           </div>
         </div>
 
@@ -53,6 +60,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/about" element={<About />} />
           </Routes>
         </div>
 
