@@ -5,11 +5,11 @@ const Home: React.FC = () => {
     return (
         <div className="window" style={{ width: 400, margin: '100px auto' }}>
             <div className="title-bar">
-                <div className="title-bar-text">Welcome.exe</div>
+                <div className="title-bar-text">OldBank.exe</div>
             </div>
             <div className="window-body">
                 <p style={{ textAlign: 'center', fontSize: '18px' }}>
-                    Welcome to the <strong>Retro Hackathon App</strong>.
+                    Welcome to the <strong>OldBank App</strong>.
                 </p>
                 <p style={{ textAlign: 'center' }}>
                     Please select an option from the menu above to continue.
