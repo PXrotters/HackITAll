@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import "98.css";
 
 const About: React.FC = () => {
@@ -35,19 +36,19 @@ const About: React.FC = () => {
                     {/* Coloana 1: CARIERE */}
                     <div style={columnStyle}>
                         <div style={headerStyle}>📂 CARIERE</div>
-                        <a href="#">Joburi disponibile</a>
-                        <a href="#">Internships</a>
-                        <a href="#">Life@OldBank</a>
-                        <a href="#">Cultura OldBank</a>
-                        <a href="#">OldBank Code</a>
+                        <Link to="/jobs">Joburi disponibile</Link>
+                        <Link to="/internships">Internships</Link>
+                        <Link to="/life-at-oldbank">Life@OldBank</Link>
+                        <Link to="/culture">Cultura OldBank</Link>
+                        <Link to="/oldbank-code">OldBank Code</Link>
                     </div>
 
                     {/* Coloana 2: NEWSROOM */}
                     <div style={columnStyle}>
                         <div style={headerStyle}>📰 NEWSROOM</div>
-                        <a href="#">Comunicate de presă</a>
-                        <a href="#">Milestones</a>
-                        <a href="#">Noutăți</a>
+                        <Link to="/newsroom">Comunicate de presă</Link>
+                        <Link to="/newsroom">Milestones</Link>
+                        <Link to="/newsroom">Noutăți</Link>
                         <a href="#">#OldBank Voice</a>
                         <a href="#">Anunțuri</a>
                     </div>

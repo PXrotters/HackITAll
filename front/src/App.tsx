@@ -6,6 +6,12 @@ import Home from "./Home";
 import Login from "./Login";
 import Register from "./Register";
 import About from "./About";
+import Jobs from "./Jobs";
+import Internships from "./Internships";
+import LifeAtOldBank from "./LifeAtOldBank";
+import Culture from "./Culture";
+import OldBankCode from "./OldBankCode";
+import Newsroom from "./Newsroom";
 
 function App() {
   return (
@@ -61,6 +67,12 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/about" element={<About />} />
+            <Route path="/jobs" element={<Jobs />} />
+            <Route path="/internships" element={<Internships />} />
+            <Route path="/life-at-oldbank" element={<LifeAtOldBank />} />
+            <Route path="/culture" element={<Culture />} />
+            <Route path="/oldbank-code" element={<OldBankCode />} />
+            <Route path="/newsroom" element={<Newsroom />} />
           </Routes>
         </div>
 
