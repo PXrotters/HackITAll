@@ -1,0 +1,285 @@
+import React, { useState, useRef, useEffect } from 'react';
+
+interface ClippyProps {
+    username: string;
+    accounts: any[];
+}
+
+interface Message {
+    id: number;
+    text: string;
+    sender: 'user' | 'clippy';
+}
+
+interface CategoryAmount {
+    category: string;
+    amount: number;
+}
+
+interface SpendingSummary {
+    period: string;
+    currency: string;
+    total_income?: number;
+    total_expenses?: number;
+    by_category: CategoryAmount[];
+}
+
+interface Context {
+    spending_summary?: SpendingSummary;
+}
+
+interface Meta {
+    new_session: boolean;
+    first_greeting: boolean;
+}
+
+interface ClippyRequest {
+    session_id?: string;
+    user_id?: string;
+    message?: string;
+    locale?: string;
+    context?: Context;
+    meta?: Meta;
+}
+
+interface Action {
+    type: string;
+    data: any;
+}
+
+interface ClippyResponse {
+    reply: string;
+    suggested_replies: string[];
+    actions: Action[];
+}
+
+const Clippy: React.FC<ClippyProps> = ({ username, accounts }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [messages, setMessages] = useState<Message[]>([
+        // Initial placeholder, will be replaced/augmented by greeting
+    ]);
+    const [inputValue, setInputValue] = useState('');
+    const [isTyping, setIsTyping] = useState(false);
+    const [sessionId, setSessionId] = useState<string>('');
+    const [suggestedReplies, setSuggestedReplies] = useState<string[]>([]);
+
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        if (isOpen) {
+            scrollToBottom();
+        }
+    }, [messages, isOpen]);
+
+    // Initialize session and get greeting
+    useEffect(() => {
+        const newSessionId = crypto.randomUUID();
+        setSessionId(newSessionId);
+
+        // Fetch greeting
+        fetchGreeting(newSessionId);
+    }, []);
+
+    const fetchGreeting = async (sid: string) => {
+        setIsTyping(true);
+        try {
+            const req: ClippyRequest = {
+                session_id: sid,
+                user_id: username,
+                meta: {
+                    new_session: true,
+                    first_greeting: true
+                },
+                // We can construct a basic context if we have data, but initially maybe not needed for greeting
+                context: {
+                    spending_summary: {
+                        period: new Date().toISOString().slice(0, 7), // YYYY-MM
+                        currency: 'RON',
+                        by_category: accounts.map(acc => ({ category: acc.name, amount: acc.balance })) // Gross simplification for context
+                    }
+                }
+            };
+
+            const response = await fetch('/clippy/message', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(req)
+            });
+
+            if (response.ok) {
+                const data: ClippyResponse = await response.json();
+                setMessages(prev => [...prev, { id: Date.now(), text: data.reply, sender: 'clippy' }]);
+                setSuggestedReplies(data.suggested_replies);
+            }
+        } catch (e) {
+            console.error(e);
+            setMessages(prev => [...prev, { id: Date.now(), text: "Hi! I'm Clippy. (Connection error)", sender: 'clippy' }]);
+        } finally {
+            setIsTyping(false);
+        }
+    };
+
+    const handleSendMessage = async (textOverride?: string) => {
+        const textToSend = textOverride || inputValue;
+        if (!textToSend.trim()) return;
+
+        const newUserMsg: Message = {
+            id: Date.now(),
+            text: textToSend,
+            sender: 'user'
+        };
+
+        setMessages(prev => [...prev, newUserMsg]);
+        setInputValue('');
+        setSuggestedReplies([]); // Clear suggestions after user action
+        setIsTyping(true);
+
+        try {
+            // Construct Context based on accounts (Mapping accounts to categories for now as a hack)
+            const summary: SpendingSummary = {
+                period: new Date().toISOString().slice(0, 7),
+                currency: 'RON', // Defaulting
+                total_income: 0,
+                total_expenses: 0,
+                by_category: accounts.map(acc => ({ category: acc.name, amount: acc.balance }))
+            };
+
+            const req: ClippyRequest = {
+                session_id: sessionId,
+                user_id: username,
+                message: textToSend,
+                context: {
+                    spending_summary: summary
+                },
+                meta: {
+                    new_session: false,
+                    first_greeting: false
+                }
+            };
+
+            const response = await fetch('/clippy/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(req)
+            });
+
+            if (response.ok) {
+                const data: ClippyResponse = await response.json();
+                setMessages(prev => [...prev, {
+                    id: Date.now() + 1,
+                    text: data.reply,
+                    sender: 'clippy'
+                }]);
+                setSuggestedReplies(data.suggested_replies);
+            } else {
+                setMessages(prev => [...prev, { id: Date.now() + 1, text: "Sorry, I'm having trouble connecting to the server.", sender: 'clippy' }]);
+            }
+        } catch (error) {
+            console.error(error);
+            setMessages(prev => [...prev, { id: Date.now() + 1, text: "An error occurred while sending your message.", sender: 'clippy' }]);
+        } finally {
+            setIsTyping(false);
+        }
+    };
+
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            handleSendMessage();
+        }
+    };
+
+    return (
+        <div style={{
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            zIndex: 1000,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'end'
+        }}>
+            {isOpen && (
+                <div className="window" style={{ marginBottom: '10px', width: '300px', height: '450px', display: 'flex', flexDirection: 'column' }}>
+                    <div className="title-bar">
+                        <div className="title-bar-text">Clippy Assistant</div>
+                        <div className="title-bar-controls">
+                            <button aria-label="Close" onClick={() => setIsOpen(false)}></button>
+                        </div>
+                    </div>
+                    <div className="window-body" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                        <div style={{ flex: 1, overflowY: 'auto', marginBottom: '10px', padding: '5px', background: 'white', border: '1px solid #808080' }}>
+                            {messages.map(msg => (
+                                <div key={msg.id} style={{
+                                    marginBottom: '5px',
+                                    textAlign: msg.sender === 'user' ? 'right' : 'left'
+                                }}>
+                                    <span style={{
+                                        background: msg.sender === 'user' ? '#e0e0e0' : '#ffffdd',
+                                        padding: '5px 10px',
+                                        borderRadius: '5px',
+                                        display: 'inline-block',
+                                        border: '1px solid gray'
+                                    }}>
+                                        <strong>{msg.sender === 'user' ? 'You' : 'Clippy'}:</strong> {msg.text}
+                                    </span>
+                                </div>
+                            ))}
+                            {isTyping && <p style={{ fontStyle: 'italic', fontSize: '12px' }}>Clippy is typing...</p>}
+                            <div ref={messagesEndRef} />
+                        </div>
+
+                        {/* Suggested Replies */}
+                        {suggestedReplies.length > 0 && (
+                            <div style={{ marginBottom: '10px', display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                                {suggestedReplies.map((suggestion, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => handleSendMessage(suggestion)}
+                                        style={{ fontSize: '11px', padding: '2px 5px' }}
+                                    >
+                                        {suggestion}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
+                        <div style={{ display: 'flex', gap: '5px' }}>
+                            <input
+                                type="text"
+                                value={inputValue}
+                                onChange={e => setInputValue(e.target.value)}
+                                onKeyDown={handleKeyPress}
+                                style={{ flex: 1 }}
+                                placeholder="Ask Clippy..."
+                            />
+                            <button onClick={() => handleSendMessage()}>Send</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {!isOpen && messages.length > 0 && (
+                <div className="window" style={{ marginBottom: '10px', width: '200px', display: 'block' }}>
+                    <div className="window-body">
+                        <p>{messages[messages.length - 1].text}</p>
+                    </div>
+                </div>
+            )}
+
+            <img
+                src="/clippy/clippy-white-1.gif"
+                alt="Clippy"
+                style={{ width: '150px', height: '150px', cursor: 'pointer' }}
+                onClick={() => setIsOpen(!isOpen)}
+            />
+        </div>
+    );
+};
+
+export default Clippy;

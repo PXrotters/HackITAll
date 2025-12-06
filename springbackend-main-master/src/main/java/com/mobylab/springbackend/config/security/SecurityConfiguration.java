@@ -34,16 +34,17 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain authServerSecurityFilterChain (HttpSecurity http) throws Exception{
+    public SecurityFilterChain authServerSecurityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable);
         if (securityEnabled) {
-           http.authorizeHttpRequests(auth -> auth
-                   .requestMatchers("/api/v1/auth/login", "/api/v1/auth/register",
-                           "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html","/book/getByAuthor").permitAll()
-                   .anyRequest().authenticated())
-                   .exceptionHandling((exception)-> exception.authenticationEntryPoint(authEntryPoint))
-                   .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-           http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+            http.authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/api/v1/auth/login", "/api/v1/auth/register",
+                            "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+                    .permitAll()
+                    .anyRequest().authenticated())
+                    .exceptionHandling((exception) -> exception.authenticationEntryPoint(authEntryPoint))
+                    .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+            http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         } else {
             http.authorizeHttpRequests(auth -> auth
                     .anyRequest().permitAll());
@@ -52,17 +53,18 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception{
-        return  authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean
-    PasswordEncoder passwordEncoder(){
+    PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(){
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter();
     }
 }
