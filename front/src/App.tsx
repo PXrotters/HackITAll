@@ -16,7 +16,7 @@ function App() {
           <div className="window-body" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
 
             <div style={{ fontWeight: "bold", marginRight: "20px" }}>
-              💻 RetroApp
+              💻 RetroApp {localStorage.getItem('username') ? `| Hello, ${localStorage.getItem('username')}` : ''}
             </div>
 
             {/* Link-urile sunt stilizate ca butoane Windows */}
@@ -24,13 +24,25 @@ function App() {
               <button>🏠 Home</button>
             </Link>
 
-            <Link to="/login">
-              <button>🔑 Login</button>
-            </Link>
+            {!localStorage.getItem('token') ? (
+              <>
+                <Link to="/login">
+                  <button>🔑 Login</button>
+                </Link>
 
-            <Link to="/register">
-              <button>📝 Register</button>
-            </Link>
+                <Link to="/register">
+                  <button>📝 Register</button>
+                </Link>
+              </>
+            ) : (
+              <button onClick={() => {
+                localStorage.removeItem('token');
+                localStorage.removeItem('username');
+                window.location.href = '/login';
+              }}>
+                🚪 Logout
+              </button>
+            )}
 
           </div>
         </div>
