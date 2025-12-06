@@ -24,8 +24,19 @@ interface SpendingSummary {
     by_category: CategoryAmount[];
 }
 
+interface Transaction {
+    id: number;
+    date: string;
+    amount: number;
+    currency: string;
+    type: 'DEBIT' | 'CREDIT';
+    description: string;
+    category?: string;
+}
+
 interface Context {
     spending_summary?: SpendingSummary;
+    recent_transactions?: Transaction[];
 }
 
 interface Meta {
@@ -123,6 +134,38 @@ const Clippy: React.FC<ClippyProps> = ({ username, accounts }) => {
         }
     };
 
+    const fetchAllTransactions = async (): Promise<Transaction[]> => {
+        const token = localStorage.getItem('token');
+        if (!token || accounts.length === 0) return [];
+
+        const allTx: Transaction[] = [];
+        for (const acc of accounts) {
+            try {
+                const res = await fetch(`http://localhost:8090/api/v1/bank/accounts/${acc.id}/transactions`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    // Enrich with currency from account
+                    const enriched = data.map((t: any) => ({
+                        id: t.id,
+                        date: t.createdAt, // Backend sends 'createdAt'
+                        amount: t.amount,
+                        currency: acc.currency,
+                        type: t.type,
+                        description: t.description,
+                        category: 'General' // Placeholder as backend doesn't have category yet
+                    }));
+                    allTx.push(...enriched);
+                }
+            } catch (err) {
+                console.error("Failed to fetch history for account " + acc.id, err);
+            }
+        }
+        // Sort by date desc
+        return allTx.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 10);
+    };
+
     const handleSendMessage = async (textOverride?: string) => {
         const textToSend = textOverride || inputValue;
         if (!textToSend.trim()) return;
@@ -148,12 +191,15 @@ const Clippy: React.FC<ClippyProps> = ({ username, accounts }) => {
                 by_category: accounts.map(acc => ({ category: acc.name, amount: acc.balance }))
             };
 
+            const recentTransactions = await fetchAllTransactions();
+
             const req: ClippyRequest = {
                 session_id: sessionId,
                 user_id: username,
                 message: textToSend,
                 context: {
-                    spending_summary: summary
+                    spending_summary: summary,
+                    recent_transactions: recentTransactions
                 },
                 meta: {
                     new_session: false,

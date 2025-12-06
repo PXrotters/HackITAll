@@ -35,4 +35,9 @@ public class BankingController {
         bankingService.transfer(authentication.getName(), dto);
         return ResponseEntity.ok("Transfer successful");
     }
+
+    @GetMapping("/accounts/{accountId}/transactions")
+    public ResponseEntity<?> getTransactions(@PathVariable Long accountId, Authentication authentication) {
+        return ResponseEntity.ok(bankingService.getAccountTransactions(authentication.getName(), accountId));
+    }
 }

@@ -10,6 +10,14 @@ interface BankAccount {
     name: string;
 }
 
+interface Transaction {
+    id: number;
+    createdAt: string;
+    type: 'DEBIT' | 'CREDIT';
+    amount: number;
+    description: string;
+}
+
 const Home: React.FC = () => {
     const [accounts, setAccounts] = useState<BankAccount[]>([]);
     const [loading, setLoading] = useState(false);
@@ -104,6 +112,26 @@ const Home: React.FC = () => {
         }
     };
 
+    // History Modal State
+    const [historyAccountId, setHistoryAccountId] = useState<number | null>(null);
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+    const fetchHistory = async (accountId: number) => {
+        setHistoryAccountId(accountId);
+        setTransactions([]);
+        try {
+            const response = await fetch(`http://localhost:8090/api/v1/bank/accounts/${accountId}/transactions`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setTransactions(data);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
     if (!token) {
         return (
             <div className="window" style={{ width: 400, margin: '100px auto' }}>
@@ -137,10 +165,13 @@ const Home: React.FC = () => {
                     {loading ? <p>Loading...</p> : (
                         <ul style={{ listStyle: 'none', padding: 0 }}>
                             {accounts.map(acc => (
-                                <li key={acc.id} style={{ marginBottom: '10px', border: '1px solid gray', padding: '5px', background: 'white' }}>
-                                    <strong>{acc.name}</strong> ({acc.currency}) <br />
-                                    IBAN: {acc.iban} <br />
-                                    Balance: <strong>{acc.balance}</strong>
+                                <li key={acc.id} style={{ marginBottom: '10px', border: '1px solid gray', padding: '5px', background: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div>
+                                        <strong>{acc.name}</strong> ({acc.currency}) <br />
+                                        IBAN: {acc.iban} <br />
+                                        Balance: <strong>{acc.balance}</strong>
+                                    </div>
+                                    <button onClick={() => fetchHistory(acc.id)}>History</button>
                                 </li>
                             ))}
                         </ul>
@@ -199,6 +230,50 @@ const Home: React.FC = () => {
                     <button style={{ marginTop: '10px' }} onClick={handleTransfer}>Send Money</button>
                 </div>
             </div>
+
+            {/* History Popup */}
+            {historyAccountId && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+                    background: 'rgba(0,0,0,0.5)', zIndex: 2000, display: 'flex', justifyContent: 'center', alignItems: 'center'
+                }}>
+                    <div className="window" style={{ width: 500, height: 400, display: 'flex', flexDirection: 'column' }}>
+                        <div className="title-bar">
+                            <div className="title-bar-text">Transaction History (Account #{historyAccountId})</div>
+                            <div className="title-bar-controls">
+                                <button aria-label="Close" onClick={() => setHistoryAccountId(null)}></button>
+                            </div>
+                        </div>
+                        <div className="window-body" style={{ flex: 1, overflowY: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr>
+                                        <th style={{ textAlign: 'left' }}>Date</th>
+                                        <th style={{ textAlign: 'left' }}>Type</th>
+                                        <th style={{ textAlign: 'left' }}>Description</th>
+                                        <th style={{ textAlign: 'right' }}>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {transactions.map(tx => (
+                                        <tr key={tx.id}>
+                                            <td>{new Date(tx.createdAt).toLocaleString()}</td>
+                                            <td>{tx.type}</td>
+                                            <td>{tx.description}</td>
+                                            <td style={{ textAlign: 'right', color: tx.type === 'DEBIT' ? 'red' : 'green' }}>
+                                                {tx.type === 'DEBIT' ? '-' : '+'}{tx.amount}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {transactions.length === 0 && (
+                                        <tr><td colSpan={4} style={{ textAlign: 'center' }}>No transactions found.</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

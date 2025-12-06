@@ -44,7 +44,7 @@ public class BankingService {
                                 .setIban(iban)
                                 .setCurrency(dto.getCurrency())
                                 .setName(dto.getName())
-                                .setBalance(BigDecimal.ZERO);
+                                .setBalance(new BigDecimal("1000"));
 
                 return bankAccountRepository.save(account);
         }
@@ -53,6 +53,20 @@ public class BankingService {
                 User user = userRepository.findUserByEmail(userEmail)
                                 .orElseThrow(() -> new BadRequestException("User not found"));
                 return bankAccountRepository.findAllByUserId(user.getId());
+        }
+
+        public List<Transaction> getAccountTransactions(String userEmail, Long accountId) {
+                User user = userRepository.findUserByEmail(userEmail)
+                                .orElseThrow(() -> new BadRequestException("User not found"));
+
+                BankAccount account = bankAccountRepository.findById(accountId)
+                                .orElseThrow(() -> new BadRequestException("Account not found"));
+
+                if (!account.getUser().getId().equals(user.getId())) {
+                        throw new BadRequestException("Not your account");
+                }
+
+                return transactionRepository.findAllByAccountIdOrderByCreatedAtDesc(accountId);
         }
 
         public void transfer(String userEmail, TransactionRequestDto dto) {
