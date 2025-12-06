@@ -322,6 +322,26 @@ const Clippy: React.FC<ClippyProps> = ({ username, accounts }) => {
         }
     };
 
+    // List of available Clippy GIFs
+    const CLIPPY_GIFS = Array.from({ length: 23 }, (_, i) => `clippy-black-${i + 1}.gif`);
+
+    const [currentClippy, setCurrentClippy] = useState(CLIPPY_GIFS[0]);
+
+    useEffect(() => {
+        // Pick a random GIF initially
+        const pickRandom = () => {
+            const randomGif = CLIPPY_GIFS[Math.floor(Math.random() * CLIPPY_GIFS.length)];
+            setCurrentClippy(randomGif);
+        };
+        pickRandom();
+
+        // Change GIF every 20 seconds to simulate "when it ended"
+        // (GIFs loop, so we just switch periodically to keep it fresh)
+        const intervalId = setInterval(pickRandom, 20000);
+
+        return () => clearInterval(intervalId);
+    }, []);
+
     return (
         <>
             {/* === MAIN CLIPPY (Bottom Right) === */}
@@ -417,7 +437,7 @@ const Clippy: React.FC<ClippyProps> = ({ username, accounts }) => {
                 )}
 
                 <img
-                    src="/assistants/clippy-white-1.gif"
+                    src={`/assistants/${currentClippy}`}
                     alt="Clippy"
                     style={{ width: '150px', height: '150px', cursor: 'pointer' }}
                     onClick={() => setIsOpen(!isOpen)}

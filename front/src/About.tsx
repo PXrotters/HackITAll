@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import "98.css";
 
 const About: React.FC = () => {
-    // Stiluri pentru coloane (ca să arate ca în poză, dar retro)
+    // --- STILURI ---
     const columnStyle = {
         display: 'flex',
         flexDirection: 'column' as 'column',
@@ -14,28 +14,46 @@ const About: React.FC = () => {
     const headerStyle = {
         fontWeight: 'bold',
         marginBottom: '10px',
-        textDecoration: 'underline'
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px'
     };
 
+    const iconStyle = {
+        width: '24px',
+        height: '24px',
+        imageRendering: 'pixelated' as 'pixelated'
+    };
+
+
     return (
-        // Fereastra mare centrată
-        <div className="window" style={{ width: 1000, maxWidth: '95%', margin: '50px auto' }}>
+        <div
+            className="window"
+            style={{
+                width: 1200,
+                maxWidth: '95%',
+                margin: '50px auto',
+                boxShadow: 'initial',
+                zIndex: 1000
+            }}
+        >
             <div className="title-bar">
                 <div className="title-bar-text">About OldBank - Directory</div>
                 <div className="title-bar-controls">
-                    <button aria-label="Close"></button>
                 </div>
             </div>
 
-            <div className="window-body" style={{ fontSize: '13px' }}>
+            <div className="window-body" style={{ fontSize: '14px' }}>
                 <p style={{ marginBottom: '20px' }}>Select a category to learn more about our bank:</p>
 
-                {/* GRID LAYOUT: 3 Coloane pentru desktop */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
 
                     {/* Coloana 1: CARIERE */}
                     <div style={columnStyle}>
-                        <div style={headerStyle}>📂 CARIERE</div>
+                        <div style={headerStyle}>
+                            <img src="https://win98icons.alexmeub.com/icons/png/briefcase-2.png" alt="" style={iconStyle} />
+                            <span style={{ textDecoration: 'underline' }}>CARIERE</span>
+                        </div>
                         <Link to="/jobs">Joburi disponibile</Link>
                         <Link to="/internships">Internships</Link>
                         <Link to="/life-at-oldbank">Life@OldBank</Link>
@@ -45,19 +63,22 @@ const About: React.FC = () => {
 
                     {/* Coloana 2: NEWSROOM */}
                     <div style={columnStyle}>
-                        <div style={headerStyle}>📰 NEWSROOM</div>
+                        <div style={headerStyle}>
+                            <img src="https://win98icons.alexmeub.com/icons/png/help_question_mark-0.png" alt="" style={iconStyle} />
+                            <span style={{ textDecoration: 'underline' }}>NEWSROOM</span>
+                        </div>
                         <Link to="/newsroom">Comunicate de presă</Link>
                         <Link to="/milestones">Milestones</Link>
                         <Link to="/news">Noutăți</Link>
-
                         <Link to="/announcements">Anunțuri</Link>
                     </div>
 
-
-
-                    {/* Coloana 5: COMUNITATE */}
+                    {/* Coloana 3: COMUNITATE */}
                     <div style={columnStyle}>
-                        <div style={headerStyle}>🤝 OldBank COMUNITATE</div>
+                        <div style={headerStyle}>
+                            <img src="https://win98icons.alexmeub.com/icons/png/world-3.png" alt="" style={iconStyle} />
+                            <span style={{ textDecoration: 'underline' }}>OldBank COMUNITATE</span>
+                        </div>
                         <Link to="/education">Educație</Link>
                         <Link to="/social">Social</Link>
                         <Link to="/environment">Mediu</Link>
@@ -65,9 +86,8 @@ const About: React.FC = () => {
 
                 </div>
 
-                {/* Footer al ferestrei */}
                 <div className="status-bar" style={{ marginTop: '20px' }}>
-                    <p className="status-bar-field">Total links: 20</p>
+                    <p className="status-bar-field">Total links: 12</p>
                     <p className="status-bar-field">System: Online</p>
                 </div>
             </div>

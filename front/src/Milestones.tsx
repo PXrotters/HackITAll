@@ -7,11 +7,11 @@ const MILESTONES_DATA = [
     { id: 1, date: "11 NOV 2025", title: "Record: Bank Friday 2025", icon: "https://win98icons.alexmeub.com/icons/png/cd_audio_cd_a-4.png", stats: "30.000 aplicatii / zi", body: "30.000 de persoane au aplicat într-o singură zi pentru produse și servicii ale Grupului OldBank, în campania Bank Friday 2025. Sistemele au funcționat la capacitate maximă fără erori critice." },
     { id: 2, date: "07 OCT 2025", title: "Creștere OldBank Pensii", icon: "https://win98icons.alexmeub.com/icons/png/chart1-0.png", stats: "+9.000 participanti", body: "Record lunar de 9.000 de participanți noi la OldBank Pensii, înregistrat în luna septembrie. Încrederea în sistemul nostru de pensii este la un nivel istoric." },
     { id: 3, date: "29 SEP 2025", title: "Interacțiuni Chat OldBank", icon: "https://win98icons.alexmeub.com/icons/png/chm-0.png", stats: "1.000.000 interactiuni", body: "Am atins pragul de 1 milion de interacțiuni prin Chat OldBank în aplicația OldPay. Asistentul nostru virtual a procesat cererile cu o viteză record de procesare." },
-    { id: 4, date: "28 AUG 2025", title: "Siguranța Online", icon: "https://win98icons.alexmeub.com/icons/png/security_key-0.png", stats: "280.000 utilizatori", body: "280.000 de persoane și-au testat cunoștințele pe platforma OldBank 'Siguranța online'. Educația digitală rămâne o prioritate pentru protecția datelor clienților noștri." },
+    { id: 4, date: "28 AUG 2025", title: "Siguranța Online", icon: "https://win98icons.alexmeub.com/icons/png/key_padlock-0.png", stats: "280.000 utilizatori", body: "280.000 de persoane și-au testat cunoștințele pe platforma OldBank 'Siguranța online'. Educația digitală rămâne o prioritate pentru protecția datelor clienților noștri." },
     { id: 5, date: "24 IUL 2025", title: "Dublare Acționari", icon: "https://win98icons.alexmeub.com/icons/png/users-1.png", stats: "71.000 actionari", body: "OldBank și-a dublat numărul de acționari față de 2021 și a ajuns la aproape 71.000. Comunitatea investitorilor noștri este mai puternică ca niciodată." },
-    { id: 6, date: "21 MAI 2025", title: "Asset Management via OldPay", icon: "https://win98icons.alexmeub.com/icons/png/money_bag-0.png", stats: "100.000 investitori", body: "Peste 100.000 de persoane investesc în fondurile OldBank Asset Management folosind direct aplicația OldPay. Democratizarea investițiilor continuă." },
+    { id: 6, date: "21 MAI 2025", title: "Asset Management via OldPay", icon: "https://win98icons.alexmeub.com/icons/png/overlay_share-0.png", stats: "100.000 investitori", body: "Peste 100.000 de persoane investesc în fondurile OldBank Asset Management folosind direct aplicația OldPay. Democratizarea investițiilor continuă." },
     { id: 7, date: "12 MAI 2025", title: "Antreprenori pe OldBank Go", icon: "https://win98icons.alexmeub.com/icons/png/computer_explorer-4.png", stats: "300.000 firme", body: "Peste 300.000 de antreprenori fac banking și business prin platforma OldBank Go. Susținem economia locală prin tehnologie simplificată." },
-    { id: 8, date: "05 FEB 2025", title: "Investiții 'Pensia Mea'", icon: "https://win98icons.alexmeub.com/icons/png/piggy_bank-0.png", stats: "100.000 contracte", body: "100.000 de persoane au ales să investească în produsul 'Pensia Mea' de la OldBank Pensii, asigurându-și un viitor financiar mai stabil." }
+    { id: 8, date: "05 FEB 2025", title: "Investiții 'Pensia Mea'", icon: "https://win98icons.alexmeub.com/icons/png/web_file_set-4.png", stats: "100.000 contracte", body: "100.000 de persoane au ales să investească în produsul 'Pensia Mea' de la OldBank Pensii, asigurându-și un viitor financiar mai stabil." }
 ];
 
 // --- COMPONENTA DRAGGABLE ---
@@ -65,8 +65,6 @@ const DraggableWindow: React.FC<DraggableWindowProps> = ({ title, children, onCl
             <div className="title-bar" onMouseDown={startDrag} style={{ cursor: "move", userSelect: "none" }}>
                 <div className="title-bar-text">{title}</div>
                 <div className="title-bar-controls">
-                    <button aria-label="Minimize"></button>
-                    <button aria-label="Maximize"></button>
                     <button aria-label="Close" onClick={onClose}></button>
                 </div>
             </div>

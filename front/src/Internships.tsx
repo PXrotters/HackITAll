@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "98.css";
 
-// Datele pentru Internships (format similar cu joburile, dar adaptat)
+// Datele pentru Internships
 const INTERNSHIPS_DATA = [
     { id: 1, title: "Archive_Sort.exe", dept: "Floppy Disk Manager", type: "3 Months", salary: "Unpaid", desc: "Your job is to organize our stack of 500 floppy disks by color and label them." },
     { id: 2, title: "Coffee_Runner.bat", dept: "Caffeine Logistics", type: "6 Months", salary: "Coffee Beans", desc: "Ensure the Java developers never run out of fuel. Speed is key." },
@@ -11,6 +11,105 @@ const INTERNSHIPS_DATA = [
     { id: 5, title: "Fax_Fixer.com", dept: "Hardware Support", type: "3 Months", salary: "Vouchers", desc: "Unjam the paper from the fax machine. It happens daily." },
 ];
 
+// --- COMPONENTA POPUP DRAGGABLE ---
+interface InternshipPopupProps {
+    internship: any;
+    onClose: () => void;
+}
+
+const InternshipPopup: React.FC<InternshipPopupProps> = ({ internship, onClose }) => {
+    // Poziționare inițială centrată
+    const [pos, setPos] = useState({ x: window.innerWidth / 2 - 200, y: window.innerHeight / 2 - 150 });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+    const windowRef = useRef<HTMLDivElement>(null);
+
+    const startDrag = (e: React.MouseEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        if (windowRef.current) {
+            const rect = windowRef.current.getBoundingClientRect();
+            setDragOffset({
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            });
+            setIsDragging(true);
+        }
+    };
+
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!isDragging) return;
+            setPos({
+                x: e.clientX - dragOffset.x,
+                y: e.clientY - dragOffset.y
+            });
+        };
+
+        const handleMouseUp = () => {
+            setIsDragging(false);
+        };
+
+        if (isDragging) {
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        }
+
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, dragOffset]);
+
+    return (
+        <div
+            ref={windowRef}
+            className="window"
+            style={{
+                position: "fixed",
+                top: `${pos.y}px`,
+                left: `${pos.x}px`,
+                width: "400px",
+                zIndex: 9999,
+                boxShadow: "10px 10px 0px rgba(0,0,0,0.5)",
+                margin: 0 // Important pentru a preveni săriturile
+            }}
+        >
+            <div
+                className="title-bar"
+                onMouseDown={startDrag}
+                style={{ cursor: 'move', userSelect: 'none' }}
+            >
+                <div className="title-bar-text">{internship.title} - Properties</div>
+                <div className="title-bar-controls">
+                    <button aria-label="Close" onClick={onClose}></button>
+                </div>
+            </div>
+            <div className="window-body">
+                <div style={{ display: "flex", gap: "15px", marginBottom: "20px" }}>
+                    <img src="https://win98icons.alexmeub.com/icons/png/console_prompt-0.png" style={{ width: "48px", height: "48px" }} alt="job" />
+                    <div>
+                        <h3 style={{ margin: 0 }}>{internship.title}</h3>
+                        <p style={{ margin: 0, color: "gray" }}>Role: {internship.dept}</p>
+                    </div>
+                </div>
+
+                <fieldset>
+                    <legend>Description</legend>
+                    <p>{internship.desc}</p>
+                    <p style={{ marginTop: '10px', fontStyle: 'italic' }}>Duration: {internship.type}</p>
+                </fieldset>
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "20px" }}>
+                    <button onClick={() => alert("Application sent via Fax!")}>Apply Now</button>
+                    <button onClick={onClose}>Cancel</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
+// --- COMPONENTA PRINCIPALĂ ---
 const Internships: React.FC = () => {
     const navigate = useNavigate();
     const [selectedIntern, setSelectedIntern] = useState<any>(null);
@@ -24,20 +123,16 @@ const Internships: React.FC = () => {
                 <div className="title-bar">
                     <div className="title-bar-text">C:\OldBank\INTERNSHIPS</div>
                     <div className="title-bar-controls">
-                        <button aria-label="Minimize"></button>
-                        <button aria-label="Maximize"></button>
                         <button aria-label="Close" onClick={() => navigate('/about')}></button>
                     </div>
                 </div>
 
-                {/* Meniul de sus (File, Edit...) */}
                 <div className="window-body" style={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
                     <div style={{ display: "flex", gap: "10px", paddingBottom: "10px", borderBottom: "2px solid #dfdfdf" }}>
                         <button onClick={() => navigate('/about')}>⬅ Back</button>
                         <span style={{ padding: "5px" }}>Address: <span style={{ background: "white", border: "1px solid gray", padding: "2px 10px" }}>C:\Internships</span></span>
                     </div>
 
-                    {/* Zona Albă cu Lista de Internships */}
                     <div className="sunken-panel" style={{ flexGrow: 1, background: "white", marginTop: "10px", overflowY: "auto", padding: "5px" }}>
 
                         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
@@ -79,36 +174,12 @@ const Internships: React.FC = () => {
                 </div>
             </div>
 
-            {/* --- POPUP (DETALII INTERNSHIP) - Stil Notepad adaptat --- */}
+            {/* --- POPUP (DETALII INTERNSHIP) - DRAGGABLE --- */}
             {selectedIntern && (
-                <div className="window" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "400px", zIndex: 1000, boxShadow: "10px 10px 0px rgba(0,0,0,0.5)" }}>
-                    <div className="title-bar">
-                        <div className="title-bar-text">{selectedIntern.title} - Properties</div>
-                        <div className="title-bar-controls">
-                            <button aria-label="Close" onClick={() => setSelectedIntern(null)}></button>
-                        </div>
-                    </div>
-                    <div className="window-body">
-                        <div style={{ display: "flex", gap: "15px", marginBottom: "20px" }}>
-                            <img src="https://win98icons.alexmeub.com/icons/png/console_prompt-0.png" style={{ width: "48px", height: "48px" }} alt="job" />
-                            <div>
-                                <h3 style={{ margin: 0 }}>{selectedIntern.title}</h3>
-                                <p style={{ margin: 0, color: "gray" }}>Role: {selectedIntern.dept}</p>
-                            </div>
-                        </div>
-
-                        <fieldset>
-                            <legend>Description</legend>
-                            <p>{selectedIntern.desc}</p>
-                            <p style={{ marginTop: '10px', fontStyle: 'italic' }}>Duration: {selectedIntern.type}</p>
-                        </fieldset>
-
-                        <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "20px" }}>
-                            <button onClick={() => alert("Application sent via Fax!")}>Apply Now</button>
-                            <button onClick={() => setSelectedIntern(null)}>Cancel</button>
-                        </div>
-                    </div>
-                </div>
+                <InternshipPopup
+                    internship={selectedIntern}
+                    onClose={() => setSelectedIntern(null)}
+                />
             )}
 
         </div>

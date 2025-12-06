@@ -6,16 +6,16 @@ const LifeAtOldBank: React.FC = () => {
     const navigate = useNavigate();
 
     return (
-        <div style={{ padding: "50px", height: "100vh", boxSizing: "border-box", overflow: "hidden" }}>
+        // MODIFICARE: Am redus padding-ul de sus la 20px (în loc de 50px)
+        <div style={{ padding: "20px 50px", height: "100vh", boxSizing: "border-box", overflow: "hidden" }}>
 
             {/* FEREASTRA PRINCIPALĂ */}
+            {/* MODIFICARE: margin: "0 auto" pentru a nu avea spațiu extra sus */}
             <div className="window" style={{ maxWidth: "800px", margin: "0 auto", height: "600px", display: "flex", flexDirection: "column" }}>
 
                 <div className="title-bar">
                     <div className="title-bar-text">Life @ OldBank - Internal Memo.txt</div>
                     <div className="title-bar-controls">
-                        <button aria-label="Minimize"></button>
-                        <button aria-label="Maximize"></button>
                         <button aria-label="Close" onClick={() => navigate('/about')}></button>
                     </div>
                 </div>

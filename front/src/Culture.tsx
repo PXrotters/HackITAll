@@ -6,39 +6,16 @@ const Culture: React.FC = () => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<string>('valori');
 
-    // Stare pentru Popup-uri (reține care popup e deschis: 'educatie', 'social', 'mediu' sau null)
-    const [activePopup, setActivePopup] = useState<string | null>(null);
-
-    // Datele pentru fiecare Popup
-    const popupContent: any = {
-        educatie: {
-            title: "Detalii - Educatie.txt",
-            text: "Investim în viitor! Programul 'OldBank Academy' oferă burse de studiu pentru 500 de studenți anual. Organizăm workshop-uri de educație financiară în licee și parteneriate cu universitățile de top din țară.",
-            icon: "https://win98icons.alexmeub.com/icons/png/help_book_big-0.png"
-        },
-        social: {
-            title: "Detalii - Social Impact.txt",
-            text: "Suntem alături de cei care au nevoie. Anul acesta am donat peste 1 milion de RON către cauze umanitare și am construit 5 case pentru familii defavorizate prin programul nostru de voluntariat.",
-            icon: "https://win98icons.alexmeub.com/icons/png/users-0.png"
-        },
-        mediu: {
-            title: "Detalii - Green Initiative.txt",
-            text: "OldBank devine verde! Am redus consumul de hârtie cu 60% prin digitalizare. Pentru fiecare cont nou deschis online, plantăm un copac în 'Pădurea OldBank'.",
-            icon: "https://win98icons.alexmeub.com/icons/png/world-3.png"
-        }
-    };
-
     return (
-        <div style={{ padding: "50px", height: "100vh", boxSizing: "border-box", overflow: "hidden" }}>
+        <div style={{ padding: "10px 50px", height: "100vh", boxSizing: "border-box", overflow: "hidden" }}>
 
             {/* FEREASTRA PRINCIPALĂ */}
-            <div className="window" style={{ maxWidth: "800px", margin: "0 auto", height: "650px", display: "flex", flexDirection: "column" }}>
+            {/* MODIFICARE: Am redus height la 500px pentru a fi mai mică */}
+            <div className="window" style={{ maxWidth: "800px", margin: "0 auto", height: "500px", display: "flex", flexDirection: "column" }}>
 
                 <div className="title-bar">
                     <div className="title-bar-text">OldBank Culture Properties</div>
                     <div className="title-bar-controls">
-                        <button aria-label="Minimize"></button>
-                        <button aria-label="Maximize"></button>
                         <button aria-label="Close" onClick={() => navigate('/about')}></button>
                     </div>
                 </div>
@@ -114,37 +91,48 @@ const Culture: React.FC = () => {
                             <div>
                                 {/* Educație */}
                                 <fieldset style={{ marginBottom: "15px" }}>
-                                    <legend style={{ fontWeight: "bold" }}>📚 Educație</legend>
+                                    <legend style={{ fontWeight: "bold" }}>Educație</legend>
                                     <div style={{ display: "flex", gap: "10px" }}>
                                         <img src="https://win98icons.alexmeub.com/icons/png/help_book_big-0.png" style={{ width: 32, height: 32 }} alt="book" />
                                         <div style={{ flexGrow: 1 }}>
                                             <p style={{ fontSize: "12px", marginTop: 0 }}>Credem că educația deschide drumuri și schimbă vieți. Ne implicăm și susținem proiecte ambițioase.</p>
-                                            <button style={{ marginTop: "5px" }} onClick={() => setActivePopup('educatie')}>Mai mult...</button>
+
+                                            {/* MODIFICARE: Text buton "Mai mult..." */}
+                                            <button style={{ marginTop: "5px", cursor: "pointer", minWidth: "100px" }} onClick={() => navigate('/education')}>
+                                                Mai mult...
+                                            </button>
                                         </div>
                                     </div>
                                 </fieldset>
 
                                 {/* Social */}
                                 <fieldset style={{ marginBottom: "15px" }}>
-                                    <legend style={{ fontWeight: "bold" }}>🤝 Social</legend>
+                                    <legend style={{ fontWeight: "bold" }}>Social</legend>
                                     <div style={{ display: "flex", gap: "10px" }}>
-                                        {/* ICONIȚĂ FIXATĂ: trust1-0.png (strângere de mână) */}
                                         <img src="https://win98icons.alexmeub.com/icons/png/users-0.png" style={{ width: 32, height: 32 }} alt="social" />
                                         <div style={{ flexGrow: 1 }}>
                                             <p style={{ fontSize: "12px", marginTop: 0 }}>Din grijă pentru oameni, susținem comunitățile defavorizate. Stă în puterea noastră să ajutăm.</p>
-                                            <button style={{ marginTop: "5px" }} onClick={() => setActivePopup('social')}>Mai mult...</button>
+
+                                            {/* MODIFICARE: Text buton "Mai mult..." */}
+                                            <button style={{ marginTop: "5px", cursor: "pointer", minWidth: "100px" }} onClick={() => navigate('/social')}>
+                                                Mai mult...
+                                            </button>
                                         </div>
                                     </div>
                                 </fieldset>
 
                                 {/* Mediu */}
                                 <fieldset>
-                                    <legend style={{ fontWeight: "bold" }}>🌍 Mediu</legend>
+                                    <legend style={{ fontWeight: "bold" }}>Mediu</legend>
                                     <div style={{ display: "flex", gap: "10px" }}>
                                         <img src="https://win98icons.alexmeub.com/icons/png/world-3.png" style={{ width: 32, height: 32 }} alt="earth" />
                                         <div style={{ flexGrow: 1 }}>
                                             <p style={{ fontSize: "12px", marginTop: 0 }}>Ne place natura! Contribuim activ în proiecte care fac diferența pentru un mediu mai curat.</p>
-                                            <button style={{ marginTop: "5px" }} onClick={() => setActivePopup('mediu')}>Mai mult...</button>
+
+                                            {/* MODIFICARE: Text buton "Mai mult..." */}
+                                            <button style={{ marginTop: "5px", cursor: "pointer", minWidth: "100px" }} onClick={() => navigate('/environment')}>
+                                                Mai mult...
+                                            </button>
                                         </div>
                                     </div>
                                 </fieldset>
@@ -154,7 +142,6 @@ const Culture: React.FC = () => {
                         {/* TAB 4: CONTACT */}
                         {activeTab === 'contact' && (
                             <div style={{ textAlign: "center", paddingTop: "50px" }}>
-                                {/* ICONIȚĂ FIXATĂ: outlook_express-0.png (plic cu săgeți) */}
                                 <img src="https://win98icons.alexmeub.com/icons/png/outlook_express-0.png" style={{ width: 64 }} alt="mail" />
                                 <h2>Suntem aici pentru tine</h2>
                                 <p>În cazul în care ai alte întrebări sau sugestii:</p>
@@ -169,44 +156,8 @@ const Culture: React.FC = () => {
                         )}
 
                     </div>
-
-                    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px", gap: "10px" }}>
-                        <button onClick={() => navigate('/about')} style={{ minWidth: "80px" }}>OK</button>
-                        <button onClick={() => navigate('/about')} style={{ minWidth: "80px" }}>Cancel</button>
-                    </div>
-
                 </div>
             </div>
-
-            {/* --- POPUP WINDOW (Apare peste conținut când apeși "Mai mult") --- */}
-            {activePopup && popupContent[activePopup] && (
-                <div className="window" style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    width: "400px",
-                    zIndex: 1000,
-                    boxShadow: "10px 10px 0px rgba(0,0,0,0.5)"
-                }}>
-                    <div className="title-bar">
-                        <div className="title-bar-text">{popupContent[activePopup].title}</div>
-                        <div className="title-bar-controls">
-                            <button aria-label="Close" onClick={() => setActivePopup(null)}></button>
-                        </div>
-                    </div>
-                    <div className="window-body">
-                        <div style={{ display: 'flex', gap: '15px', alignItems: 'flex-start' }}>
-                            <img src={popupContent[activePopup].icon} alt="icon" style={{ width: 32, height: 32 }} />
-                            <p style={{ marginTop: 0 }}>{popupContent[activePopup].text}</p>
-                        </div>
-                        <div style={{ textAlign: 'center', marginTop: '15px' }}>
-                            <button onClick={() => setActivePopup(null)} style={{ width: "80px" }}>Close</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
         </div>
     );
 };

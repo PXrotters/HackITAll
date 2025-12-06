@@ -95,8 +95,6 @@ const DraggableWindow: React.FC<DraggableWindowProps> = ({ title, children, onCl
             <div className="title-bar" onMouseDown={startDrag} style={{ cursor: "move", userSelect: "none", background: "linear-gradient(90deg, #008000, #004000)" }}>
                 <div className="title-bar-text">{title}</div>
                 <div className="title-bar-controls">
-                    <button aria-label="Minimize"></button>
-                    <button aria-label="Maximize"></button>
                     <button aria-label="Close" onClick={onClose}></button>
                 </div>
             </div>
@@ -133,9 +131,6 @@ const Environment: React.FC = () => {
 
                 {/* TOOLBAR */}
                 <div style={{ padding: "5px", borderBottom: "1px solid gray", display: "flex", gap: "10px", background: "#c0c0c0" }}>
-                    <button style={{ minWidth: 80 }}>Scan Map</button>
-                    <button style={{ minWidth: 80 }}>Analysis</button>
-                    <div style={{ width: 1, height: 20, background: 'gray', margin: '0 5px' }}></div>
                     <button style={{ minWidth: 60 }} onClick={() => navigate('/about')}>Exit</button>
                 </div>
 

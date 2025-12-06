@@ -70,8 +70,6 @@ const OldBankCode: React.FC = () => {
                 <div className="title-bar">
                     <div className="title-bar-text">OldBank Code - System Overview.log</div>
                     <div className="title-bar-controls">
-                        <button aria-label="Minimize"></button>
-                        <button aria-label="Maximize"></button>
                         <button aria-label="Close" onClick={() => navigate('/about')}></button>
                     </div>
                 </div>
@@ -89,7 +87,6 @@ const OldBankCode: React.FC = () => {
                     {/* TEHNOLOGII (CHECKBOXES) */}
                     <div style={{ flexGrow: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
-                            <img src="https://win98icons.alexmeub.com/icons/png/computer_gear-0.png" alt="gear" style={{ width: 32, height: 32 }} />
                             <h3 style={{ margin: 0 }}>System Components</h3>
                         </div>
 

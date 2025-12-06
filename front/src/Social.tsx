@@ -2,61 +2,61 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "98.css";
 
-// Datele pentru Social (OldBank)
+// Datele pentru Social (OldBank) - Iconițe Windows 98 Valide
 const SOCIAL_DATA = [
     {
         id: 1,
         title: "Caravana Faptelor Bune",
-        icon: "https://win98icons.alexmeub.com/icons/png/truck-0.png",
+        icon: "https://win98icons.alexmeub.com/icons/png/world-3.png",
         desc: "Mergem din oraș în oraș pentru a ajuta comunitățile locale cu resurse și voluntari.",
         goal: "Target: 50.000 RON"
     },
     {
         id: 2,
         title: "Fă DAR din ce ai",
-        icon: "https://win98icons.alexmeub.com/icons/png/gift-0.png",
+        icon: "https://win98icons.alexmeub.com/icons/png/envelope_closed-0.png",
         desc: "Colectăm haine și jucării pentru familiile defavorizate. Orice ajutor contează.",
         goal: "Donations: Open"
     },
     {
         id: 3,
         title: "Asistență medicală pediatrică gratuită",
-        icon: "https://win98icons.alexmeub.com/icons/png/heart-0.png",
+        icon: "https://win98icons.alexmeub.com/icons/png/doctor_watson.png",
         desc: "Susținem accesul la servicii medicale de calitate pentru copiii din zonele rurale.",
         goal: "Doctors Needed: 5"
     },
     {
         id: 4,
         title: "Ambasador pentru Acasă",
-        icon: "https://win98icons.alexmeub.com/icons/png/world-3.png",
+        icon: "https://win98icons.alexmeub.com/icons/png/world-0.png",
         desc: "Program dedicat românilor din diaspora care vor să se întoarcă și să investească acasă.",
         goal: "Community: Global"
     },
     {
         id: 5,
         title: "Remesh - a doua șansă",
-        icon: "https://win98icons.alexmeub.com/icons/png/recycle_bin_full-4.png",
+        icon: "https://win98icons.alexmeub.com/icons/png/recycle_bin_full-0.png",
         desc: "Atelier de inserție socio-profesională care transformă bannere publicitare în accesorii fashion.",
         goal: "Eco-Friendly"
     },
     {
         id: 6,
         title: "Crăciunul Dorințelor Simple",
-        icon: "https://win98icons.alexmeub.com/icons/png/star-0.png",
+        icon: "https://win98icons.alexmeub.com/icons/png/directory_favorites-0.png",
         desc: "Îndeplinim dorințele copiilor din centrele de plasament în prag de sărbători.",
         goal: "Wishes: 500+"
     },
     {
         id: 7,
         title: "O porție în plus la masa de Crăciun",
-        icon: "https://win98icons.alexmeub.com/icons/png/utensils-0.png", // Icon simulat (nu exista tacamuri in win98 default, folosim ceva similar sau generic)
+        icon: "https://win98icons.alexmeub.com/icons/png/cd_audio_cd_a-0.png",
         desc: "Asigurăm o masă caldă cât mai multor familii nevoiașe în perioada sărbătorilor.",
         goal: "Meals: 1000"
     },
     {
         id: 8,
         title: "Terapie asistată de câini",
-        icon: "https://win98icons.alexmeub.com/icons/png/accessibility_two_windows.png",
+        icon: "https://win98icons.alexmeub.com/icons/png/mouse-0.png",
         desc: "Proiect dedicat copiilor cu nevoi speciale, folosind terapia cu animale pentru recuperare.",
         goal: "Ongoing"
     },
@@ -70,14 +70,14 @@ const SOCIAL_DATA = [
     {
         id: 10,
         title: "Niciunui copil să nu-i fie frig",
-        icon: "https://win98icons.alexmeub.com/icons/png/temperature-0.png", // Icon simulat
+        icon: "https://win98icons.alexmeub.com/icons/png/settings_gear-0.png",
         desc: "Distribuim haine groase și încălțăminte de iarnă pentru copiii din satele izolate.",
         goal: "Winter Ready"
     },
     {
         id: 11,
         title: "O nouă generație de asistenți",
-        icon: "https://win98icons.alexmeub.com/icons/png/users-1.png",
+        icon: "https://win98icons.alexmeub.com/icons/png/users-0.png",
         desc: "Burse de studiu pentru elevii care vor să urmeze o carieră în asistență socială sau medicală.",
         goal: "Scholars: 20"
     }
@@ -127,18 +127,32 @@ const DraggableWindow: React.FC<DraggableWindowProps> = ({ title, children, onCl
     const transformStyle = (typeof pos.x === 'string' && pos.x === '50%') ? "translate(-50%, -50%)" : "none";
 
     return (
-        <div ref={windowRef} className="window" style={{ position: "fixed", left: pos.x, top: pos.y, transform: transformStyle, width, height, zIndex: 100, boxShadow: "10px 10px 0px rgba(0,0,0,0.5)", display: "flex", flexDirection: "column" }}>
+        <div
+            ref={windowRef}
+            className="window"
+            style={{
+                position: "fixed",
+                left: pos.x,
+                top: pos.y,
+                transform: transformStyle,
+                width,
+                height,
+                zIndex: 100,
+                boxShadow: "10px 10px 0px rgba(0,0,0,0.5)",
+                display: "flex",
+                flexDirection: "column"
+            }}
+        >
             <div className="title-bar" onMouseDown={startDrag} style={{ cursor: "move", userSelect: "none" }}>
                 <div className="title-bar-text" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                     <img src="https://win98icons.alexmeub.com/icons/png/trust1-0.png" style={{ width: 16 }} alt="" />
                     {title}
                 </div>
                 <div className="title-bar-controls">
-                    <button aria-label="Minimize"></button>
-                    <button aria-label="Maximize"></button>
                     <button aria-label="Close" onClick={onClose}></button>
                 </div>
             </div>
+            {/* Adăugat overflow: hidden aici pentru a forța dimensiunea fixă */}
             <div className="window-body" style={{ flexGrow: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>{children}</div>
         </div>
     );
@@ -161,17 +175,15 @@ const Social: React.FC = () => {
             <DraggableWindow title="OldBank Community & Social" width={850} height={550} onClose={() => navigate('/about')}>
 
                 {/* TOOLBAR */}
-                <div style={{ padding: "5px", borderBottom: "1px solid gray", display: "flex", gap: "10px", background: "#c0c0c0" }}>
-                    <button style={{ minWidth: 80, fontWeight: 'bold' }}>❤️ Donate</button>
-                    <button style={{ minWidth: 80 }}>Volunteer</button>
-                    <div style={{ width: 1, height: 20, background: 'gray', margin: '0 5px' }}></div>
+                <div style={{ padding: "5px", borderBottom: "1px solid gray", display: "flex", gap: "10px", background: "#c0c0c0", flexShrink: 0 }}>
                     <button style={{ minWidth: 60 }} onClick={() => navigate('/about')}>Back</button>
                 </div>
 
                 <div style={{ display: "flex", flexGrow: 1, overflow: "hidden", padding: "10px", gap: "10px" }}>
 
                     {/* LISTA CAUZE (STÂNGA) */}
-                    <div className="sunken-panel" style={{ width: "300px", background: "white", overflowY: "auto" }}>
+                    {/* Width fix și flex-shrink 0 pentru a nu se micșora/mări */}
+                    <div className="sunken-panel" style={{ width: "300px", minWidth: "300px", background: "white", overflowY: "auto", flexShrink: 0 }}>
                         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
                             <thead>
                                 <tr style={{ background: "#000080", color: "white" }}>
@@ -180,7 +192,7 @@ const Social: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {SOCIAL_DATA.map((item, index) => (
+                                {SOCIAL_DATA.map((item) => (
                                     <tr
                                         key={item.id}
                                         onClick={() => setSelectedCause(item)}
@@ -202,12 +214,17 @@ const Social: React.FC = () => {
                     </div>
 
                     {/* DETALII CAUZĂ (DREAPTA) */}
-                    <div className="window" style={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
-                        <div className="window-body" style={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
+                    {/* Folosim min-width: 0 pentru a permite flexbox să gestioneze overflow-ul intern corect */}
+                    <div className="window" style={{ flexGrow: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+                        <div className="window-body" style={{ flexGrow: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
-                            <div style={{ display: "flex", gap: "15px", marginBottom: "20px", alignItems: "flex-start" }}>
+                            <div style={{ display: "flex", gap: "15px", marginBottom: "20px", alignItems: "flex-start", flexShrink: 0 }}>
                                 <div style={{ border: "2px solid gray", padding: "5px", background: "white" }}>
-                                    <img src={selectedCause.icon} alt="icon" style={{ width: 64, height: 64 }} />
+                                    <img
+                                        src={selectedCause.icon}
+                                        alt="icon"
+                                        style={{ width: 64, height: 64, imageRendering: 'pixelated' }}
+                                    />
                                 </div>
                                 <div>
                                     <h3 style={{ marginTop: 0, marginBottom: "5px" }}>{selectedCause.title}</h3>
@@ -215,16 +232,16 @@ const Social: React.FC = () => {
                                 </div>
                             </div>
 
-                            <fieldset style={{ flexGrow: 1, marginBottom: "10px" }}>
+                            <fieldset style={{ flexGrow: 1, marginBottom: "10px", minHeight: 0, display: "flex", flexDirection: "column" }}>
                                 <legend>Mission Statement</legend>
-                                <div style={{ padding: "10px", fontSize: "14px", lineHeight: "1.5" }}>
+                                <div style={{ padding: "10px", fontSize: "14px", lineHeight: "1.5", overflowY: "auto", flexGrow: 1 }}>
                                     {selectedCause.desc}
                                     <br /><br />
                                     <p>OldBank se implică activ în comunitate. Credem că faptele bune se fac împreună.</p>
                                 </div>
                             </fieldset>
 
-                            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", alignItems: "center" }}>
+                            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", alignItems: "center", flexShrink: 0 }}>
                                 {donatedAmount > 0 && <span style={{ color: "blue" }}>You helped {donatedAmount} times!</span>}
                                 <button style={{ fontWeight: "bold", minWidth: 100 }} onClick={handleDonate}>🤝 Contribute</button>
                             </div>
@@ -234,7 +251,7 @@ const Social: React.FC = () => {
 
                 </div>
 
-                <div className="status-bar" style={{ marginTop: 5 }}>
+                <div className="status-bar" style={{ marginTop: 5, flexShrink: 0 }}>
                     <p className="status-bar-field">Total Initiatives: {SOCIAL_DATA.length}</p>
                     <p className="status-bar-field">Community Status: Strong</p>
                 </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "98.css";
 
@@ -69,6 +69,14 @@ const NEWS_DATA = [
     }
 ];
 
+// Stil retro reutilizabil
+const retroFontStyle = {
+    fontFamily: '"MS Sans Serif", "Microsoft Sans Serif", Tahoma, sans-serif',
+    WebkitFontSmoothing: "none",
+    fontSize: "12px",
+    lineHeight: "1.4"
+};
+
 const Newsroom: React.FC = () => {
     const navigate = useNavigate();
     const [selectedMail, setSelectedMail] = useState<any>(NEWS_DATA[0]);
@@ -78,8 +86,10 @@ const Newsroom: React.FC = () => {
     const [showAbout, setShowAbout] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
+    // --- STATE PENTRU SORTARE ---
+    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+
     // --- STATE PENTRU DRAG AND DROP (ABOUT) ---
-    // Poziția ferestrei (x, y). Dacă e null, folosim centrarea CSS default.
     const [aboutPos, setAboutPos] = useState<{ x: number, y: number } | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -90,64 +100,89 @@ const Newsroom: React.FC = () => {
 
     const closeMenu = () => setActiveMenu(null);
 
+    // --- LOGICA DE SORTARE ---
+    const sortedNews = useMemo(() => {
+        let sortableItems = [...NEWS_DATA];
+        if (sortConfig !== null) {
+            sortableItems.sort((a: any, b: any) => {
+                let aValue = a[sortConfig.key];
+                let bValue = b[sortConfig.key];
+
+                // Tratament special pentru dată
+                if (sortConfig.key === 'date') {
+                    const parseDate = (dateStr: string) => {
+                        const months: { [key: string]: number } = {
+                            'IAN': 0, 'FEB': 1, 'MAR': 2, 'APR': 3, 'MAI': 4, 'IUN': 5,
+                            'IUL': 6, 'AUG': 7, 'SEP': 8, 'OCT': 9, 'NOI': 10, 'DEC': 11
+                        };
+                        const parts = dateStr.split(' ');
+                        return new Date(parseInt(parts[2]), months[parts[1]], parseInt(parts[0])).getTime();
+                    };
+                    aValue = parseDate(aValue);
+                    bValue = parseDate(bValue);
+                }
+
+                if (aValue < bValue) {
+                    return sortConfig.direction === 'asc' ? -1 : 1;
+                }
+                if (aValue > bValue) {
+                    return sortConfig.direction === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        return sortableItems;
+    }, [sortConfig]);
+
+    const requestSort = (key: string) => {
+        let direction: 'asc' | 'desc' = 'asc';
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const getSortIndicator = (name: string) => {
+        if (!sortConfig || sortConfig.key !== name) return null;
+        return sortConfig.direction === 'asc' ? ' ▲' : ' ▼';
+    };
+
     // --- LOGICA DE DRAG & DROP ---
-    // --- LOGICA DE DRAG & DROP (FIXATĂ) ---
     const startDrag = (e: React.MouseEvent) => {
         e.preventDefault();
-
-        // Găsim fereastra părinte
         const windowElement = e.currentTarget.parentElement;
         if (windowElement) {
             const rect = windowElement.getBoundingClientRect();
-
-            // Calculăm unde a dat click userul în interiorul barei de titlu
             const offsetX = e.clientX - rect.left;
             const offsetY = e.clientY - rect.top;
-
             setDragOffset({ x: offsetX, y: offsetY });
-
-            // Setăm poziția inițială exact unde este acum pe ecran
-            // Asta previne "săritura" când trecem de la centrare CSS la poziționare absolută
             setAboutPos({ x: rect.left, y: rect.top });
-
             setIsDragging(true);
         }
     };
 
-    // Ascultăm mișcarea mouse-ului
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             if (!isDragging) return;
-
-            // Noua poziție este poziția mouse-ului minus offset-ul inițial
             setAboutPos({
                 x: e.clientX - dragOffset.x,
                 y: e.clientY - dragOffset.y
             });
         };
-
-        const handleMouseUp = () => {
-            setIsDragging(false);
-        };
-
+        const handleMouseUp = () => { setIsDragging(false); };
         if (isDragging) {
             window.addEventListener('mousemove', handleMouseMove);
             window.addEventListener('mouseup', handleMouseUp);
         }
-
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('mouseup', handleMouseUp);
         };
     }, [isDragging, dragOffset]);
 
-    // Resetăm poziția când se închide/deschide fereastra
     useEffect(() => {
-        if (!showAbout) {
-            setAboutPos(null); // O readucem la centru data viitoare
-        }
+        if (!showAbout) setAboutPos(null);
     }, [showAbout]);
-
 
     // Funcții Save As
     const openSaveDialog = () => {
@@ -225,7 +260,6 @@ const Newsroom: React.FC = () => {
                                 </div>
                             )}
                         </div>
-                        {/* Alte meniuri... */}
                         <div style={{ position: 'relative' }}>
                             <div onClick={(e) => { e.stopPropagation(); setActiveMenu(activeMenu === 'edit' ? null : 'edit'); }} style={{ padding: "2px 8px", cursor: "pointer" }}><u>E</u>dit</div>
                             {activeMenu === 'edit' && <div className="window" style={{ position: 'absolute', top: '100%', left: 0, width: '150px', zIndex: 100, padding: 2 }}><div className="menu-item" onClick={handleCopy}>Copy</div></div>}
@@ -245,15 +279,31 @@ const Newsroom: React.FC = () => {
                 <div className="window-body" style={{ flexGrow: 1, display: "flex", flexDirection: "column", padding: 0, margin: 2, overflow: "hidden" }}>
                     <div className="sunken-panel" style={{ height: "40%", background: "white", overflowY: "auto", borderLeft: "none", borderRight: "none", borderTop: "2px solid white" }}>
                         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, tableLayout: "fixed" }}>
-                            <thead style={{ position: 'sticky', top: 0, background: '#c0c0c0', borderBottom: '1px solid gray', zIndex: 1 }}>
+                            <thead style={{ position: 'sticky', top: 0, background: '#c0c0c0', borderBottom: '1px solid gray', zIndex: 1, userSelect: 'none' }}>
                                 <tr>
-                                    <th style={{ textAlign: 'left', padding: 2, width: "180px", borderRight: "1px solid gray", paddingLeft: "5px" }}>From</th>
-                                    <th style={{ textAlign: 'left', padding: 2, width: "auto", borderRight: "1px solid gray", paddingLeft: "5px" }}>Subject</th>
-                                    <th style={{ textAlign: 'left', padding: 2, width: "100px", paddingLeft: "5px" }}>Received</th>
+                                    {/* HEADERELE SORTABILE */}
+                                    <th
+                                        onClick={() => requestSort('from')}
+                                        style={{ textAlign: 'left', padding: 2, width: "180px", borderRight: "1px solid gray", paddingLeft: "5px", cursor: "pointer", borderTop: "2px solid white", borderLeft: "2px solid white", borderBottom: "2px solid black", borderRightColor: "black" }}
+                                    >
+                                        From {getSortIndicator('from')}
+                                    </th>
+                                    <th
+                                        onClick={() => requestSort('subject')}
+                                        style={{ textAlign: 'left', padding: 2, width: "auto", borderRight: "1px solid gray", paddingLeft: "5px", cursor: "pointer", borderTop: "2px solid white", borderLeft: "2px solid white", borderBottom: "2px solid black", borderRightColor: "black" }}
+                                    >
+                                        Subject {getSortIndicator('subject')}
+                                    </th>
+                                    <th
+                                        onClick={() => requestSort('date')}
+                                        style={{ textAlign: 'left', padding: 2, width: "100px", paddingLeft: "5px", cursor: "pointer", borderTop: "2px solid white", borderLeft: "2px solid white", borderBottom: "2px solid black", borderRightColor: "black" }}
+                                    >
+                                        Received {getSortIndicator('date')}
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {NEWS_DATA.map((news) => (
+                                {sortedNews.map((news) => (
                                     <tr key={news.id} onClick={() => setSelectedMail(news)} style={{ background: selectedMail.id === news.id ? "#000080" : "transparent", color: selectedMail.id === news.id ? "white" : "black", cursor: "pointer" }}>
                                         <td style={{ padding: "1px 4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", borderRight: "1px solid #dfdfdf" }}>{news.from}</td>
                                         <td style={{ padding: "1px 4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", borderRight: "1px solid #dfdfdf" }}>{news.subject}</td>
@@ -267,47 +317,38 @@ const Newsroom: React.FC = () => {
                     <div className="sunken-panel" style={{ flexGrow: 1, background: "white", padding: "15px", overflowY: "auto", border: "none" }}>
                         {selectedMail ? (
                             <div>
-                                <div style={{ borderBottom: "1px solid #ccc", paddingBottom: 5, marginBottom: 10, background: "#ffffe1", padding: 10, border: "1px solid #999", fontSize: "12px" }}>
+                                {/* Header-ul mesajului cu stil retro */}
+                                <div style={{ borderBottom: "1px solid #ccc", paddingBottom: 5, marginBottom: 15, background: "#ffffe1", padding: 10, border: "1px solid #999", ...retroFontStyle }}>
                                     <div style={{ marginBottom: 2 }}><strong>From:</strong> {selectedMail.from}</div>
                                     <div style={{ marginBottom: 2 }}><strong>Date:</strong> {selectedMail.date}</div>
                                     <div style={{ marginTop: 5 }}><strong>Subject:</strong> {selectedMail.subject}</div>
                                 </div>
-                                <div style={{ fontFamily: "Arial, sans-serif", lineHeight: "1.5", fontSize: "13px", padding: "5px" }}>
-                                    <h3 style={{ marginTop: 0, marginBottom: 15 }}>{selectedMail.subject}</h3>
+
+                                {/* Corpul mesajului cu font pixelat */}
+                                <div style={{ ...retroFontStyle, padding: "5px" }}>
+                                    <h3 style={{ marginTop: 0, marginBottom: 15, fontSize: "14px", fontWeight: "bold" }}>{selectedMail.subject}</h3>
                                     <p style={{ margin: 0 }}>{selectedMail.body}</p>
                                     <br />
-                                    <p style={{ fontStyle: 'italic', color: 'gray', fontSize: "11px", marginTop: 20 }}>---<br />OldBank Press Office<br /><a href="#" style={{ color: 'blue' }}>www.oldbank.ro</a></p>
+                                    <br />
+                                    <p style={{ fontFamily: '"Courier New", Courier, monospace', fontSize: "12px", color: 'gray', marginTop: 20 }}>
+                                        ---------------------------<br />
+                                        OldBank Press Office<br />
+                                        <a href="#" style={{ color: 'blue' }}>www.oldbank.ro</a>
+                                    </p>
                                 </div>
                             </div>
                         ) : (<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'gray' }}>Select a message to read.</div>)}
                     </div>
                 </div>
-                <div className="status-bar"><p className="status-bar-field">8 message(s)</p><p className="status-bar-field">Connected to OldBank Server</p></div>
+                <div className="status-bar"><p className="status-bar-field">{sortedNews.length} message(s)</p><p className="status-bar-field">Connected to OldBank Server</p></div>
             </div>
 
-            {/* --- FEREASTRA "ABOUT" POPUP (DRAGGABLE) --- */}
+            {/* --- POPUPs & DIALOGS --- */}
             {showAbout && (
-                <div className="window" style={{
-                    position: "fixed", // Folosim fixed ca să fie relativ la viewport
-                    // Dacă avem poziție manuală (drag), o folosim. Altfel, centrăm cu CSS.
-                    top: aboutPos ? aboutPos.y : "50%",
-                    left: aboutPos ? aboutPos.x : "50%",
-                    // Doar dacă NU avem poziție manuală, aplicăm transformarea de centrare
-                    transform: aboutPos ? "none" : "translate(-50%, -50%)",
-                    width: "300px",
-                    zIndex: 9999, // Z-index mare ca să fie peste tot
-                    boxShadow: "10px 10px 0px rgba(0,0,0,0.5)",
-                    margin: 0 // Resetăm marginile
-                }}>
-                    <div
-                        className="title-bar"
-                        onMouseDown={startDrag} // AICI ÎNCEPE DRAG-UL
-                        style={{ cursor: "move" }} // Arată iconița de mutare
-                    >
+                <div className="window" style={{ position: "fixed", top: aboutPos ? aboutPos.y : "50%", left: aboutPos ? aboutPos.x : "50%", transform: aboutPos ? "none" : "translate(-50%, -50%)", width: "300px", zIndex: 9999, boxShadow: "10px 10px 0px rgba(0,0,0,0.5)", margin: 0 }}>
+                    <div className="title-bar" onMouseDown={startDrag} style={{ cursor: "move" }}>
                         <div className="title-bar-text">About OldBank News</div>
-                        <div className="title-bar-controls">
-                            <button aria-label="Close" onClick={() => setShowAbout(false)}></button>
-                        </div>
+                        <div className="title-bar-controls"><button aria-label="Close" onClick={() => setShowAbout(false)}></button></div>
                     </div>
                     <div className="window-body" style={{ textAlign: 'center' }}>
                         <img src="https://win98icons.alexmeub.com/icons/png/outlook_express-0.png" alt="logo" style={{ width: 32, marginBottom: 10 }} />
@@ -319,7 +360,6 @@ const Newsroom: React.FC = () => {
                 </div>
             )}
 
-            {/* --- SAVE AS DIALOG --- */}
             {showSaveDialog && (
                 <div className="window" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "400px", zIndex: 1000, boxShadow: "10px 10px 0 rgba(0,0,0,0.5)" }}>
                     <div className="title-bar"><div className="title-bar-text">Save Message As</div><div className="title-bar-controls"><button aria-label="Close" onClick={() => setShowSaveDialog(false)}></button></div></div>

@@ -82,8 +82,6 @@ const DraggableWindow: React.FC<DraggableWindowProps> = ({ title, children, onCl
             <div className="title-bar" onMouseDown={startDrag} style={{ cursor: "move", userSelect: "none" }}>
                 <div className="title-bar-text">{title}</div>
                 <div className="title-bar-controls">
-                    <button aria-label="Minimize"></button>
-                    <button aria-label="Maximize"></button>
                     <button aria-label="Close" onClick={onClose}></button>
                 </div>
             </div>

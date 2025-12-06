@@ -5,13 +5,13 @@ import "98.css";
 // Datele transformate (BT -> OldBank)
 const NEWS_ITEMS = [
     { id: 1, date: "04 DEC 2025", category: "Comunicate", title: "Fitch confirmă rating-urile OldBank", icon: "https://win98icons.alexmeub.com/icons/png/certificate-1.png", body: "Agenția Fitch a reconfirmat rating-urile OldBank, subliniind poziția solidă de capital. Aceasta este o veste excelentă pentru investitorii noștri." },
-    { id: 2, date: "28 NOI 2025", category: "Noutăți", title: "OldBank, premiată pentru relația cu investitorii", icon: "https://win98icons.alexmeub.com/icons/png/trophy-0.png", body: "În cadrul galei anuale a Bursei, OldBank a primit premiul pentru 'Cea mai bună comunicare cu investitorii', confirmând transparența noastră." },
+    { id: 2, date: "28 NOI 2025", category: "Noutăți", title: "OldBank, premiată pentru relația cu investitorii", icon: "https://win98icons.alexmeub.com/icons/png/chart1-5.png", body: "În cadrul galei anuale a Bursei, OldBank a primit premiul pentru 'Cea mai bună comunicare cu investitorii', confirmând transparența noastră." },
     { id: 3, date: "28 NOI 2025", category: "#OldBankVoice", title: "Daniela Secară: Listarea nu mai este opțională", icon: "https://win98icons.alexmeub.com/icons/png/microphone-0.png", body: "Daniela Secară, OldBank Capital Partners: 'Pentru companiile care aspiră la leadership în economie, prezența pe bursă devine o necesitate, nu doar o opțiune.'" },
-    { id: 4, date: "27 NOI 2025", category: "Comunicate", title: "Finanțare sindicalizată de 300 mil. EUR pentru Autonom", icon: "https://win98icons.alexmeub.com/icons/png/money_bag-0.png", body: "OldBank a coordonat, ca aranjator principal, finanțarea sindicalizată de 300 milioane de euro pentru Autonom Services." },
+    { id: 4, date: "27 NOI 2025", category: "Comunicate", title: "Finanțare sindicalizată de 300 mil. EUR pentru Autonom", icon: "https://win98icons.alexmeub.com/icons/png/msg_information-2.png", body: "OldBank a coordonat, ca aranjator principal, finanțarea sindicalizată de 300 milioane de euro pentru Autonom Services." },
     { id: 5, date: "28 NOI 2025", category: "Comunicate", title: "Grupul OldBank ajunge la 800.000 participanți Pensii", icon: "https://win98icons.alexmeub.com/icons/png/users-1.png", body: "În urma achiziției BRD Pensii, Grupul OldBank a atins pragul istoric de 800.000 de participanți la fondurile Pilon 2 și 3." },
-    { id: 6, date: "26 NOI 2025", category: "#OldBankVoice", title: "Ionuț Morar: Transformăm leasingul în soluții de mobilitate", icon: "https://win98icons.alexmeub.com/icons/png/car-0.png", body: "Ionuț Morar, OldBank Leasing: 'Viziunea noastră este să transformăm leasingul dintr-un simplu produs financiar într-o platformă complexă de soluții.'" },
-    { id: 7, date: "28 NOI 2025", category: "Noutăți", title: "Grupul OldBank News | Noiembrie 2025", icon: "https://win98icons.alexmeub.com/icons/png/newspaper-0.png", body: "Rezumatul lunii Noiembrie: Lansări noi în OldPay, parteneriate strategice și rezultate financiare peste așteptări." },
-    { id: 8, date: "25 NOI 2025", category: "#OldBankVoice", title: "Tiberiu Moisă: O perioadă bună pentru decizii curajoase", icon: "https://win98icons.alexmeub.com/icons/png/lightbulb-0.png", body: "Tiberiu Moisă, OldBank: 'Văd o perioadă foarte bună pentru decizii curajoase atunci când curajul, ca şi calcul economic, face sens.'" }
+    { id: 6, date: "26 NOI 2025", category: "#OldBankVoice", title: "Ionuț Morar: Transformăm leasingul în soluții de mobilitate", icon: "https://win98icons.alexmeub.com/icons/png/joystick-4.png", body: "Ionuț Morar, OldBank Leasing: 'Viziunea noastră este să transformăm leasingul dintr-un simplu produs financiar într-o platformă complexă de soluții.'" },
+    { id: 7, date: "28 NOI 2025", category: "Noutăți", title: "Grupul OldBank News | Noiembrie 2025", icon: "https://win98icons.alexmeub.com/icons/png/message_file-0.png", body: "Rezumatul lunii Noiembrie: Lansări noi în OldPay, parteneriate strategice și rezultate financiare peste așteptări." },
+    { id: 8, date: "25 NOI 2025", category: "#OldBankVoice", title: "Tiberiu Moisă: O perioadă bună pentru decizii curajoase", icon: "https://win98icons.alexmeub.com/icons/png/trust0-0.png", body: "Tiberiu Moisă, OldBank: 'Văd o perioadă foarte bună pentru decizii curajoase atunci când curajul, ca şi calcul economic, face sens.'" }
 ];
 
 // --- DRAGGABLE WINDOW COMPONENT ---
@@ -62,8 +62,6 @@ const DraggableWindow: React.FC<DraggableWindowProps> = ({ title, children, onCl
             <div className="title-bar" onMouseDown={startDrag} style={{ cursor: "move", userSelect: "none" }}>
                 <div className="title-bar-text">{title}</div>
                 <div className="title-bar-controls">
-                    <button aria-label="Minimize"></button>
-                    <button aria-label="Maximize"></button>
                     <button aria-label="Close" onClick={onClose}></button>
                 </div>
             </div>
