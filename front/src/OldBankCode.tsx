@@ -51,7 +51,7 @@ const OldBankCode: React.FC = () => {
         },
         {
             id: "RURU",
-            name: "R.A.U.L.bat",
+            name: "R.U.R.U.bat",
             subtitle: "Artificial Intelligence",
             icon: "https://win98icons.alexmeub.com/icons/png/msagent-3.png",
             desc: "RURU de la OldBank. Informații non-stop despre produsele și serviciile noastre.",

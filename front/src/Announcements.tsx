@@ -9,7 +9,7 @@ const ANNOUNCEMENTS_DATA = [
     { id: 3, date: "23 OCT 2025", type: "Maintenance", icon: "warning", title: "Mentenanță generală servere", body: "Mentenanță programată OldBank, în 24/25 octombrie (vineri/sâmbătă) și 25/26 octombrie (sâmbătă/duminică). ATM-urile vor funcționa normal." },
     { id: 4, date: "11 AUG 2025", type: "Schedule", icon: "clock", title: "Program OldBank: 15 August", body: "Unitățile OldBank vor fi închise pe 15 August (Sf. Maria). Call Center-ul va funcționa după program normal pentru urgențe." },
     { id: 5, date: "03 OCT 2025", type: "Maintenance", icon: "warning", title: "Mentenanță baze de date", body: "Mentenanță programată OldBank, în 4 și 5 octombrie. Posibile întreruperi scurte la plățile cu cardul online." },
-    { id: 6, date: "20 MAI 2025", type: "Corporate", icon: "info", title: "Vasile Pușcaș: Academia Europaea", body: "Prof. univ. dr. Vasile Pușcaș, parte din Consiliul de Administrație OldBank, a fost ales membru al prestigioasei Academii Europaea." },
+    { id: 6, date: "20 MAI 2025", type: "Corporate", icon: "info", title: "Vasile Pușcaș: Academia Europeana", body: "Prof. univ. dr. Vasile Pușcaș, parte din Consiliul de Administrație OldBank, a fost ales membru al prestigioasei Academii Europeana." },
     { id: 7, date: "15 SEP 2025", type: "Corporate", icon: "info", title: "OldBank Investor Day", body: "OldBank Investor Day va avea loc în noiembrie. Vom prezenta strategia pentru anul 2026 și rezultatele trimestriale." },
     { id: 8, date: "20 MAR 2025", type: "Maintenance", icon: "warning", title: "Mentenanță critică carduri", body: "Mentenanță programată pentru cardurile și aplicațiile OldBank în 22/23 martie, intervalul 12:30 AM - 2:30 AM. Tranzacțiile vor fi oprite." }
 ];
