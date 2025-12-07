@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Clippy from './components/Clippy';
+
 import RetroPieChart from './components/RetroPieChart';
+import RetroModal from './components/RetroModal';
 
 interface BankAccount {
     id: number;
@@ -135,6 +137,48 @@ const Home: React.FC = () => {
         }
     };
 
+    // Modal State
+    const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: React.ReactNode; onConfirm: () => void }>({
+        isOpen: false,
+        title: '',
+        message: null,
+        onConfirm: () => { }
+    });
+
+    const [alertModal, setAlertModal] = useState<{ isOpen: boolean; title: string; message: React.ReactNode; isError?: boolean }>({
+        isOpen: false,
+        title: '',
+        message: null
+    });
+
+    const showConfirm = (title: string, message: React.ReactNode, onConfirm: () => void) => {
+        setConfirmModal({ isOpen: true, title, message, onConfirm });
+    };
+
+    const showAlert = (title: string, message: React.ReactNode, isError = false) => {
+        setAlertModal({ isOpen: true, title, message, isError });
+    };
+
+    const handleSendStatement = async () => {
+        if (!historyAccountId) return;
+        setConfirmModal(prev => ({ ...prev, isOpen: false })); // Close confirm modal
+
+        try {
+            const res = await fetch(`http://localhost:8090/api/v1/bank/accounts/${historyAccountId}/statement`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                showAlert("Success", "Statement sent!");
+            } else {
+                showAlert("Error", "Failed to send statement.", true);
+            }
+        } catch (err) {
+            console.error(err);
+            showAlert("Error", "Error sending statement.", true);
+        }
+    };
+
     // Calculate chart data
     const chartData = useMemo(() => {
         const stats: Record<string, number> = {};
@@ -173,180 +217,208 @@ const Home: React.FC = () => {
     }
 
     return (
-        <div style={{ padding: '20px', display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <Clippy accounts={accounts} username={localStorage.getItem('username') || 'Guest'} />
-            {/* Accounts List */}
-            <div className="window" style={{ width: 400 }}>
-                <div className="title-bar">
-                    <div className="title-bar-text">My Accounts</div>
+        <>
+            <div style={{ padding: '20px', display: 'flex', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <Clippy accounts={accounts} username={localStorage.getItem('username') || 'Guest'} />
+                {/* Accounts List */}
+                <div className="window" style={{ width: 400 }}>
+                    <div className="title-bar">
+                        <div className="title-bar-text">My Accounts</div>
+                    </div>
+                    <div className="window-body">
+                        {loading ? <p>Loading...</p> : (
+                            <ul style={{ listStyle: 'none', padding: 0 }}>
+                                {accounts.map(acc => (
+                                    <li key={acc.id} style={{ marginBottom: '10px', border: '1px solid gray', padding: '5px', background: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div>
+                                            <strong>{acc.name}</strong> ({acc.currency}) <br />
+                                            IBAN: {acc.iban} <br />
+                                            Balance: <strong>{acc.balance}</strong>
+                                        </div>
+                                        <button onClick={() => fetchHistory(acc.id)}>History</button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
                 </div>
-                <div className="window-body">
-                    {loading ? <p>Loading...</p> : (
-                        <ul style={{ listStyle: 'none', padding: 0 }}>
-                            {accounts.map(acc => (
-                                <li key={acc.id} style={{ marginBottom: '10px', border: '1px solid gray', padding: '5px', background: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div>
-                                        <strong>{acc.name}</strong> ({acc.currency}) <br />
-                                        IBAN: {acc.iban} <br />
-                                        Balance: <strong>{acc.balance}</strong>
+
+                {/* Make Transfer */}
+                <div className="window" style={{ width: 300, height: 'fit-content' }}>
+                    <div className="title-bar">
+                        <div className="title-bar-text">Quick Transfer</div>
+                    </div>
+                    <div className="window-body">
+                        <div className="field-row-stacked">
+                            <label>From Account</label>
+                            <select value={sourceAccountId || ''} onChange={e => setSourceAccountId(Number(e.target.value))}>
+                                {accounts.map(acc => (
+                                    <option key={acc.id} value={acc.id}>{acc.name} ({acc.balance} {acc.currency})</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="field-row-stacked">
+                            <label>To IBAN</label>
+                            <input type="text" value={destinationIban} onChange={e => setDestinationIban(e.target.value)} />
+                        </div>
+                        <div className="field-row-stacked">
+                            <label>Amount</label>
+                            <input type="number" value={amount} onChange={e => setAmount(e.target.value)} />
+                        </div>
+                        <div className="field-row-stacked">
+                            <label>Description</label>
+                            <input type="text" value={description} onChange={e => setDescription(e.target.value)} />
+                        </div>
+                        <div className="field-row-stacked">
+                            <label>Category (e.g. Food, Rent)</label>
+                            <input type="text" value={category} onChange={e => setCategory(e.target.value)} />
+                        </div>
+                        <button style={{ marginTop: '10px' }} onClick={handleTransfer}>Send Money</button>
+                    </div>
+                </div>
+
+                {/* Create Account */}
+                <div className="window" style={{ width: 300, height: 'fit-content' }}>
+                    <div className="title-bar">
+                        <div className="title-bar-text">New Account</div>
+                    </div>
+                    <div className="window-body">
+                        <div className="field-row-stacked">
+                            <label>Account Name</label>
+                            <input type="text" value={newAccountName} onChange={e => setNewAccountName(e.target.value)} />
+                        </div>
+                        <div className="field-row-stacked">
+                            <label>Currency</label>
+                            <select value={newAccountCurrency} onChange={e => setNewAccountCurrency(e.target.value)}>
+                                <option value="RON">RON</option>
+                                <option value="EUR">EUR</option>
+                                <option value="USD">USD</option>
+                            </select>
+                        </div>
+                        <button style={{ marginTop: '10px' }} onClick={handleCreateAccount}>Create Account</button>
+                    </div>
+                </div>
+
+                {/* History Window */}
+                {historyAccountId && (
+                    <>
+                        {/* Statistics Window (Separate) */}
+                        {showStats && (
+                            <div className="window" style={{ width: 300, height: 'fit-content', marginRight: '-10px', zIndex: 1 }}>
+                                <div className="title-bar">
+                                    <div className="title-bar-text">Spending Analysis</div>
+                                    <div className="title-bar-controls">
+                                        <button aria-label="Close" onClick={() => setShowStats(false)}></button>
                                     </div>
-                                    <button onClick={() => fetchHistory(acc.id)}>History</button>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-            </div>
+                                </div>
+                                <div className="window-body" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                    <p style={{ margin: '5px 0' }}><strong>Spending by Category</strong></p>
+                                    <RetroPieChart data={chartData} width={260} height={170} />
+                                    {chartData.length === 0 && <p>No spending data to chart.</p>}
+                                </div>
+                            </div>
+                        )}
 
-            {/* Make Transfer */}
-            <div className="window" style={{ width: 300, height: 'fit-content' }}>
-                <div className="title-bar">
-                    <div className="title-bar-text">Quick Transfer</div>
-                </div>
-                <div className="window-body">
-                    <div className="field-row-stacked">
-                        <label>From Account</label>
-                        <select value={sourceAccountId || ''} onChange={e => setSourceAccountId(Number(e.target.value))}>
-                            {accounts.map(acc => (
-                                <option key={acc.id} value={acc.id}>{acc.name} ({acc.balance} {acc.currency})</option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="field-row-stacked">
-                        <label>To IBAN</label>
-                        <input type="text" value={destinationIban} onChange={e => setDestinationIban(e.target.value)} />
-                    </div>
-                    <div className="field-row-stacked">
-                        <label>Amount</label>
-                        <input type="number" value={amount} onChange={e => setAmount(e.target.value)} />
-                    </div>
-                    <div className="field-row-stacked">
-                        <label>Description</label>
-                        <input type="text" value={description} onChange={e => setDescription(e.target.value)} />
-                    </div>
-                    <div className="field-row-stacked">
-                        <label>Category (e.g. Food, Rent)</label>
-                        <input type="text" value={category} onChange={e => setCategory(e.target.value)} />
-                    </div>
-                    <button style={{ marginTop: '10px' }} onClick={handleTransfer}>Send Money</button>
-                </div>
-            </div>
-
-            {/* Create Account */}
-            <div className="window" style={{ width: 300, height: 'fit-content' }}>
-                <div className="title-bar">
-                    <div className="title-bar-text">New Account</div>
-                </div>
-                <div className="window-body">
-                    <div className="field-row-stacked">
-                        <label>Account Name</label>
-                        <input type="text" value={newAccountName} onChange={e => setNewAccountName(e.target.value)} />
-                    </div>
-                    <div className="field-row-stacked">
-                        <label>Currency</label>
-                        <select value={newAccountCurrency} onChange={e => setNewAccountCurrency(e.target.value)}>
-                            <option value="RON">RON</option>
-                            <option value="EUR">EUR</option>
-                            <option value="USD">USD</option>
-                        </select>
-                    </div>
-                    <button style={{ marginTop: '10px' }} onClick={handleCreateAccount}>Create Account</button>
-                </div>
-            </div>
-
-            {/* History Window */}
-            {historyAccountId && (
-                <>
-                    {/* Statistics Window (Separate) */}
-                    {showStats && (
-                        <div className="window" style={{ width: 300, height: 'fit-content', marginRight: '-10px', zIndex: 1 }}>
+                        {/* History Window */}
+                        <div className="window" style={{ width: 400, height: 350, display: 'flex', flexDirection: 'column' }}>
                             <div className="title-bar">
-                                <div className="title-bar-text">Spending Analysis</div>
+                                <div className="title-bar-text">Transaction History (Account #{historyAccountId})</div>
                                 <div className="title-bar-controls">
-                                    <button aria-label="Close" onClick={() => setShowStats(false)}></button>
+                                    <button aria-label="Close" onClick={() => setHistoryAccountId(null)}></button>
                                 </div>
                             </div>
-                            <div className="window-body" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <p style={{ margin: '5px 0' }}><strong>Spending by Category</strong></p>
-                                <RetroPieChart data={chartData} width={260} height={170} />
-                                {chartData.length === 0 && <p>No spending data to chart.</p>}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* History Window */}
-                    <div className="window" style={{ width: 400, height: 350, display: 'flex', flexDirection: 'column' }}>
-                        <div className="title-bar">
-                            <div className="title-bar-text">Transaction History (Account #{historyAccountId})</div>
-                            <div className="title-bar-controls">
-                                <button aria-label="Close" onClick={() => setHistoryAccountId(null)}></button>
-                            </div>
-                        </div>
-                        <div className="window-body" style={{ flex: 1, overflowY: 'auto' }}>
-                            {/* Selected Account Info */}
-                            {accounts.find(a => a.id === historyAccountId) && (
-                                <div style={{ textAlign: 'center', margin: '10px 0', padding: '10px', background: '#e0e0e0', border: '2px solid white', boxShadow: 'inset 1px 1px #404040, inset -1px -1px white' }}>
-                                    <div style={{ fontSize: '16px', fontWeight: 'bold' }}>
-                                        {accounts.find(a => a.id === historyAccountId)?.name}
+                            <div className="window-body" style={{ flex: 1, overflowY: 'auto' }}>
+                                {/* Selected Account Info */}
+                                {accounts.find(a => a.id === historyAccountId) && (
+                                    <div style={{ textAlign: 'center', margin: '10px 0', padding: '10px', background: '#e0e0e0', border: '2px solid white', boxShadow: 'inset 1px 1px #404040, inset -1px -1px white' }}>
+                                        <div style={{ fontSize: '16px', fontWeight: 'bold' }}>
+                                            {accounts.find(a => a.id === historyAccountId)?.name}
+                                        </div>
+                                        <div style={{ fontSize: '14px' }}>
+                                            Balance: <strong>{accounts.find(a => a.id === historyAccountId)?.balance} {accounts.find(a => a.id === historyAccountId)?.currency}</strong>
+                                        </div>
+                                        <button
+                                            style={{ marginTop: '10px' }}
+                                            onClick={() => {
+                                                if (!historyAccountId) return;
+                                                showConfirm(
+                                                    "Confirmation",
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                        <img src="https://win98icons.alexmeub.com/icons/png/mail-1.png" alt="mail" style={{ width: 32, height: 32 }} />
+                                                        <span>Send bank statement to your email?</span>
+                                                    </div>,
+                                                    handleSendStatement
+                                                );
+                                            }}
+                                        >
+                                            📧 Send Statement via Email
+                                        </button>
                                     </div>
-                                    <div style={{ fontSize: '14px' }}>
-                                        Balance: <strong>{accounts.find(a => a.id === historyAccountId)?.balance} {accounts.find(a => a.id === historyAccountId)?.currency}</strong>
-                                    </div>
-                                    <button
-                                        style={{ marginTop: '10px' }}
-                                        onClick={async () => {
-                                            if (!historyAccountId) return;
-                                            if (!confirm("Send bank statement to your email?")) return;
-                                            try {
-                                                const res = await fetch(`http://localhost:8090/api/v1/bank/accounts/${historyAccountId}/statement`, {
-                                                    method: 'POST',
-                                                    headers: { 'Authorization': `Bearer ${token}` }
-                                                });
-                                                if (res.ok) alert("Statement sent!");
-                                                else alert("Failed to send statement.");
-                                            } catch (err) {
-                                                console.error(err);
-                                                alert("Error sending statement.");
-                                            }
-                                        }}
-                                    >
-                                        📧 Send Statement via Email
-                                    </button>
-                                </div>
-                            )}
+                                )}
 
-                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead>
-                                    <tr>
-                                        <th style={{ textAlign: 'left' }}>Date</th>
-                                        <th style={{ textAlign: 'left' }}>Type</th>
-                                        <th style={{ textAlign: 'left' }}>Category</th>
-                                        <th style={{ textAlign: 'left' }}>Description</th>
-                                        <th style={{ textAlign: 'right' }}>Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {transactions.map(tx => (
-                                        <tr key={tx.id}>
-                                            <td>{new Date(tx.createdAt).toLocaleString()}</td>
-                                            <td>{tx.type}</td>
-                                            <td>{tx.category?.name || '-'}</td>
-                                            <td>{tx.description}</td>
-                                            <td style={{ textAlign: 'right', color: tx.type === 'DEBIT' ? 'red' : 'green' }}>
-                                                {tx.type === 'DEBIT' ? '-' : '+'}{tx.amount}
-                                            </td>
+                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                    <thead>
+                                        <tr>
+                                            <th style={{ textAlign: 'left' }}>Date</th>
+                                            <th style={{ textAlign: 'left' }}>Type</th>
+                                            <th style={{ textAlign: 'left' }}>Category</th>
+                                            <th style={{ textAlign: 'left' }}>Description</th>
+                                            <th style={{ textAlign: 'right' }}>Amount</th>
                                         </tr>
-                                    ))}
-                                    {transactions.length === 0 && (
-                                        <tr><td colSpan={5} style={{ textAlign: 'center' }}>No transactions found.</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {transactions.map(tx => (
+                                            <tr key={tx.id}>
+                                                <td>{new Date(tx.createdAt).toLocaleString()}</td>
+                                                <td>{tx.type}</td>
+                                                <td>{tx.category?.name || '-'}</td>
+                                                <td>{tx.description}</td>
+                                                <td style={{ textAlign: 'right', color: tx.type === 'DEBIT' ? 'red' : 'green' }}>
+                                                    {tx.type === 'DEBIT' ? '-' : '+'}{tx.amount}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {transactions.length === 0 && (
+                                            <tr><td colSpan={5} style={{ textAlign: 'center' }}>No transactions found.</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
-                </>
-            )}
-        </div >
+                    </>
+                )}
+            </div >
+            {/* Retro Modals */}
+            <RetroModal
+                isOpen={confirmModal.isOpen}
+                title={confirmModal.title}
+                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                buttons={[
+                    { label: 'Yes', onClick: confirmModal.onConfirm, autoFocus: true },
+                    { label: 'No', onClick: () => setConfirmModal(prev => ({ ...prev, isOpen: false })) }
+                ]}
+            >
+                {confirmModal.message}
+            </RetroModal>
+
+            <RetroModal
+                isOpen={alertModal.isOpen}
+                title={alertModal.title}
+                onClose={() => setAlertModal(prev => ({ ...prev, isOpen: false }))}
+                buttons={[
+                    { label: 'OK', onClick: () => setAlertModal(prev => ({ ...prev, isOpen: false })), autoFocus: true }
+                ]}
+            >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <img
+                        src={alertModal.isError ? "https://win98icons.alexmeub.com/icons/png/msg_error-0.png" : "https://win98icons.alexmeub.com/icons/png/check-0.png"}
+                        alt="icon"
+                        style={{ width: 32, height: 32 }}
+                    />
+                    <span>{alertModal.message}</span>
+                </div>
+            </RetroModal>
+        </>
     );
 };
 
