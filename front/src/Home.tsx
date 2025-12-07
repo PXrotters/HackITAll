@@ -3,6 +3,7 @@ import Clippy from './components/Clippy';
 
 import RetroPieChart from './components/RetroPieChart';
 import RetroModal from './components/RetroModal';
+import HackerTerminal from './components/HackerTerminal';
 
 interface BankAccount {
     id: number;
@@ -59,6 +60,28 @@ const Home: React.FC = () => {
             fetchAccounts();
         }
     }, [token]);
+
+    // Konami Code Logic
+    const [showTerminal, setShowTerminal] = useState(false);
+    useEffect(() => {
+        const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        let cursor = 0;
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === konamiCode[cursor]) {
+                cursor++;
+                if (cursor === konamiCode.length) {
+                    setShowTerminal(true);
+                    cursor = 0;
+                }
+            } else {
+                cursor = 0;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     const handleCreateAccount = async () => {
         try {
@@ -418,6 +441,15 @@ const Home: React.FC = () => {
                     <span>{alertModal.message}</span>
                 </div>
             </RetroModal>
+
+
+            <HackerTerminal
+                isOpen={showTerminal}
+                onClose={() => setShowTerminal(false)}
+                token={token}
+                accounts={accounts}
+                refreshAccounts={fetchAccounts}
+            />
         </>
     );
 };
