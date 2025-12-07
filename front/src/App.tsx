@@ -26,6 +26,21 @@ import Environment from "./Environment";
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(true);
 
+  // Global Click Sound
+  useState(() => {
+    const playClick = () => {
+      console.log("Attempting to play click sound...");
+      const audio = new Audio('/click.mp3');
+      audio.volume = 0.5;
+      audio.play()
+        .then(() => console.log("Audio played successfully"))
+        .catch(e => console.error("Audio play failed:", e));
+    };
+
+    window.addEventListener('click', playClick);
+    return () => window.removeEventListener('click', playClick);
+  });
+
   const backgroundStyle = isDarkMode ? {
     // Keep transparent to show body background from index.css
   } : {

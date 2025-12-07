@@ -1,10 +1,12 @@
 import React from 'react';
 import "98.css";
+import BlueScreen from "./components/BlueScreen";
 
 const Login: React.FC = () => {
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [error, setError] = React.useState('');
+    const [showBSOD, setShowBSOD] = React.useState(false);
 
     const [showSuccess, setShowSuccess] = React.useState(false);
 
@@ -25,15 +27,25 @@ const Login: React.FC = () => {
                 setShowSuccess(true);
             } else {
                 setError('Login failed. Please check your credentials.');
+                setShowBSOD(true);
             }
         } catch (err) {
             setError('An error occurred. Please try again.');
+            setShowBSOD(true);
             console.error(err);
         }
     };
 
     return (
         <>
+            {showBSOD && (
+                <BlueScreen onRestart={() => {
+                    setShowBSOD(false);
+                    setError('');
+                    setEmail('');
+                    setPassword('');
+                }} />
+            )}
             {showSuccess && (
                 <div style={{
                     position: 'fixed',
