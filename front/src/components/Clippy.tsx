@@ -88,14 +88,26 @@ const Clippy: React.FC<ClippyProps> = ({ username, accounts }) => {
 
     // Initialize session and get greeting
     useEffect(() => {
-        const newSessionId = crypto.randomUUID();
-        setSessionId(newSessionId);
+        let sid = sessionStorage.getItem('clippy_session_id');
+        let isNew = false;
 
-        // Fetch greeting
-        fetchGreeting(newSessionId);
+        if (!sid) {
+            sid = crypto.randomUUID();
+            sessionStorage.setItem('clippy_session_id', sid!);
+            isNew = true;
+        }
+
+        setSessionId(sid!);
+
+        // Fetch greeting ONLY if it's a new session
+        if (isNew) {
+            fetchGreeting(sid!, true);
+        }
     }, []);
 
-    const fetchGreeting = async (sid: string) => {
+    const fetchGreeting = async (sid: string, isNewSession: boolean = false) => {
+        if (!isNewSession) return; // Don't fetch greeting if not new
+
         setIsTyping(true);
         try {
             const req: ClippyRequest = {
@@ -313,8 +325,9 @@ const Clippy: React.FC<ClippyProps> = ({ username, accounts }) => {
         setMessages([]);
         setSuggestedReplies([]);
         const newSessionId = crypto.randomUUID();
+        sessionStorage.setItem('clippy_session_id', newSessionId);
         setSessionId(newSessionId);
-        fetchGreeting(newSessionId);
+        fetchGreeting(newSessionId, true);
     };
 
     const handleWhatIfReset = () => {

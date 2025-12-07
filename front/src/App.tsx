@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, Link, useLocation } from "react-router-dom";
 import "98.css";
 import xpWallpaper from './assets/windows_xp_original-wallpaper-3840x2160.jpg';
 import winLogo from './assets/win.png';
@@ -23,8 +23,15 @@ import Education from "./Education";
 import Social from "./Social";
 import Environment from "./Environment";
 
+import Desktop from "./Desktop"; // Import Desktop component
+
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const location = useLocation();
+
+  // Helper to determining if we are on the "Desktop" view (Root + Logged Out)
+  const isDesktopView = location.pathname === '/' && !localStorage.getItem('token');
+
 
   // Global Click Sound
   useState(() => {
@@ -244,11 +251,13 @@ function App() {
     </>
   );
 
-  return (
-    <Router>
-      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", ...backgroundStyle }}>
 
-        {/* === BARA DE MENIU (SUS) === */}
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", ...backgroundStyle }}>
+
+      {/* === BARA DE MENIU (SUS) === */}
+      {/* HIDE Top Bar if on Desktop View */}
+      {!isDesktopView && (
         <div className="window" style={{ margin: "10px", zIndex: 100 }}>
           <div className="window-body" style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
 
@@ -300,76 +309,77 @@ function App() {
 
           </div>
         </div>
+      )}
 
-        {/* === ZONA DE CONȚINUT (SCHIMBĂTOARE) === */}
-        <div style={{ flexGrow: 1, position: "relative" }}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/jobs" element={<Jobs />} />
-            <Route path="/internships" element={<Internships />} />
-            <Route path="/life-at-oldbank" element={<LifeAtOldBank />} />
-            <Route path="/culture" element={<Culture />} />
-            <Route path="/oldbank-code" element={<OldBankCode />} />
-            <Route path="/newsroom" element={<Newsroom />} />
-            <Route path="/milestones" element={<Milestones />} />
-            <Route path="/news" element={<News />} />
-            <Route path="/announcements" element={<Announcements />} />
-            <Route path="/education" element={<Education />} />
-            <Route path="/social" element={<Social />} />
-            <Route path="/environment" element={<Environment />} />
-          </Routes>
-        </div>
+      {/* === ZONA DE CONȚINUT (SCHIMBĂTOARE) === */}
+      <div style={{ flexGrow: 1, position: "relative" }}>
+        <Routes>
+          <Route path="/" element={!localStorage.getItem('token') ? <Desktop /> : <Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/jobs" element={<Jobs />} />
+          <Route path="/internships" element={<Internships />} />
+          <Route path="/life-at-oldbank" element={<LifeAtOldBank />} />
+          <Route path="/culture" element={<Culture />} />
+          <Route path="/oldbank-code" element={<OldBankCode />} />
+          <Route path="/newsroom" element={<Newsroom />} />
+          <Route path="/milestones" element={<Milestones />} />
+          <Route path="/news" element={<News />} />
+          <Route path="/announcements" element={<Announcements />} />
+          <Route path="/education" element={<Education />} />
+          <Route path="/social" element={<Social />} />
+          <Route path="/environment" element={<Environment />} />
+        </Routes>
+      </div>
 
-        {/* === CREDIT SCORE POPUP & GHOSTS === */}
-        {isScoreOpen && scoreData && (
-          <>
-            {/* TRAIL GHOSTS */}
-            {dragTrail.map((pos, idx) => (
-              <div
-                key={idx}
-                className="window"
-                style={{
-                  position: 'fixed',
-                  top: pos.y,
-                  left: pos.x,
-                  width: '350px',
-                  zIndex: 9000 + idx, // Below main popup (9999)
-                  opacity: 0.5 + (idx / dragTrail.length) * 0.5, // Fade effect
-                  pointerEvents: 'none', // Ghosts shouldn't capture clicks
-                  boxShadow: 'none'
-                }}
-              >
-                {renderPopupContent(true)}
-              </div>
-            ))}
-
-            {/* MAIN POPUP */}
+      {/* === CREDIT SCORE POPUP & GHOSTS === */}
+      {isScoreOpen && scoreData && (
+        <>
+          {/* TRAIL GHOSTS */}
+          {dragTrail.map((pos, idx) => (
             <div
+              key={idx}
               className="window"
               style={{
                 position: 'fixed',
-                // Use state position if set (dragged), otherwise center initially
-                top: scorePosition.y || '50%',
-                left: scorePosition.x || '50%',
-                transform: (scorePosition.x === 0 && scorePosition.y === 0) ? 'translate(-50%, -50%)' : 'none',
+                top: pos.y,
+                left: pos.x,
                 width: '350px',
-                zIndex: 9999,
-                boxShadow: '10px 10px 0 rgba(0,0,0,0.5)'
+                zIndex: 9000 + idx, // Below main popup (9999)
+                opacity: 0.5 + (idx / dragTrail.length) * 0.5, // Fade effect
+                pointerEvents: 'none', // Ghosts shouldn't capture clicks
+                boxShadow: 'none'
               }}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
             >
-              {renderPopupContent(false)}
+              {renderPopupContent(true)}
             </div>
-          </>
-        )}
+          ))}
 
-      </div>
-    </Router>
+          {/* MAIN POPUP */}
+          <div
+            className="window"
+            style={{
+              position: 'fixed',
+              // Use state position if set (dragged), otherwise center initially
+              top: scorePosition.y || '50%',
+              left: scorePosition.x || '50%',
+              transform: (scorePosition.x === 0 && scorePosition.y === 0) ? 'translate(-50%, -50%)' : 'none',
+              width: '350px',
+              zIndex: 9999,
+              boxShadow: '10px 10px 0 rgba(0,0,0,0.5)'
+            }}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          >
+            {renderPopupContent(false)}
+          </div>
+        </>
+      )}
+
+    </div>
+
   );
 }
 
