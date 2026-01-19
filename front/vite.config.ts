@@ -7,17 +7,17 @@ export default defineConfig({
   server: {
     proxy: {
       '/clippy/message': {
-        target: 'http://10.200.20.204:18000',
+        target: 'http://localhost:18000',
         changeOrigin: true,
         secure: false,
       },
       '/clippy/whatif': {
-        target: 'http://10.200.20.204:18000',
+        target: 'http://localhost:18000',
         changeOrigin: true,
         secure: false,
       },
       '/score': {
-        target: 'http://10.200.20.204:18000',
+        target: 'http://localhost:18000',
         changeOrigin: true,
         secure: false,
       }
